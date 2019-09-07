@@ -32,9 +32,8 @@
     <!-- script for csv importing -->
     <script src="./assets/js/ucsv-1.2.0.min.js"></script>
 
-    <!-- scripts containing jsgrid initializations -->
-    <script src="./preference.js"></script>
-    <script src="./slots.js"></script>
+    <!-- this script is everything ! -->
+    <script src="./script.js"></script>
     <style>
         .ui-widget *,
         .ui-widget input,
@@ -96,13 +95,13 @@
         <div class="row" style="margin-top: 15 px;">
             <div class="col">
                 <div class="form-group"><label class="control-label">
-                        <h3>Preferences </h3>
+                        <h3>Individuals </h3>
                     </label> <input id="file-preferences" type="file"></div>
             </div>
             <div class="col">
                 <div class="form-group"><label class="control-label">
-                        <h3>Slots </h3>
-                    </label><input id="file-slots" type="file"></div>
+                        <h3>Groups </h3>
+                    </label><input id="file-slots" type="file" style="display: none"></div>
             </div>
         </div>
         <div class="row" style="margin-top: 15 px;">
@@ -134,6 +133,7 @@
                     </form>
                 </div>
             </div>
+            
             <div class="col">
                 <div id="jsgrid-slots" style="background-color: #ffffff;"></div>
                 <!-- Slots Dialog box -->
@@ -150,17 +150,11 @@
                 </div>
             </div>
         </div>
-
         <div class="row" style="margin-top: 15 px;">
-            <div class="col">
-                <div class="form-group"><label class="control-label">
-                        <h3>Preferences file</h3>
-                    </label> <button id="savePref" class="ui-button ui-widget" >Save</button></div>
-            </div>
-            <div class="col">
-                <div class="form-group"><label class="control-label">
-                        <h3>Slots file</h3>
-                    </label><button id="saveSlot" class="ui-button ui-widget" type="submit">Save</button></div>
+            <div class="col" style="margin-top:25px">
+                <div class="form-group" style="text-align: center;"><label class="control-label">
+                        <h3>Save files</h3>
+                    </label> <button id="saveFiles" class="ui-button ui-widget" >Save</button></div>
             </div>
         </div>
     </div>
