@@ -4,7 +4,7 @@ $(function () {
     var headings = [];
     var uploaded_individuals = false;
     var uploaded_groups = false;
-
+    var formSubmitHandler = $.noop;
     document.getElementById('file-preferences').onchange = function () {
         var file = this.files[0];
         var reader = new FileReader();
@@ -83,7 +83,7 @@ $(function () {
                     var $info = $("<div>").addClass("client-info")
                         .append($("<p>").append($("<strong>").text(grp["Full-Name"])));
 
-                    return $("<tr>").append($("<td>").append(grp["Unique-id"])).append($("<td>").append($info)).append($("<td>").append(grp.capacity));
+                    return $("<tr>").append($("<td>").append(grp["Unique-id"])).append($("<td>").append($info)).append($("<td>").append((grp.allocated == null ? 0 : (grp.allocated.split(";").length)) + " / " + grp.capacity));
                 },
                 fields: [
                     { title: "Course code" }, { title: "Course name" }, { title: "Requirement" }]
@@ -100,6 +100,7 @@ $(function () {
             $("#detailsFormPref").find(".error").removeClass("error");
         }
     });
+    
     $("#detailsDialogSlot").dialog({
         autoOpen: false,
         width: 400,
@@ -132,7 +133,15 @@ $(function () {
         }
 
         formSubmitHandler = function () {
-            saveClient(client);
+            allocated = [];
+            $("#preference input").each(function (index, value) {
+                if (value.checked) allocated.push(value.id);
+            });
+            client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
+            data_individuals[client.SrNum - 1] = client;
+            //update data_ggroups here also
+            $("#jsgrid-preference").jsGrid("refresh");
+            $("#detailsDialogPref").dialog("close");
         };
 
         $("#detailsDialogPref").dialog("option", "title", dialogType + " Client")
@@ -140,10 +149,39 @@ $(function () {
     };
 
     var showGroup = function (dialogType, client) {
-        $("#nameSlot").val(client["Full-Name"]);
+        $("#nameSlot").html(client["Full-Name"]);
+        $("#slot div").remove();
+
+        var allotted_slots = client["allocated"] == null ? [] : client["allocated"].split(";");
+        var associated_slots = client.choices == null ? [] : client.choices.split(";");
+        $.each(allotted_slots, function (index, slot) {
+            if ($.inArray(slot, associated_slots) == -1)
+                associated_slots.push(slot);
+        });
+        if (associated_slots != []) {
+            $.each(associated_slots, function (index, slot) {
+                $("#slot").append($("<div class=form-group>").append($('<label>', {
+                    for: slot
+                }).text(slot)).append($('<input>', {
+                    type: 'checkbox',
+                    id: slot,
+                    name: slot
+                }).prop("checked", !($.inArray(slot, allotted_slots) == -1))));
+            });
+        }
+
         formSubmitHandler = function () {
-            saveClient(client, dialogType === "Add");
+            allocated = [];
+            $("#slot input").each(function (index, value) {
+                if (value.checked) allocated.push(value.id);
+            });
+            client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
+            data_groups[client.SrNum - 1] = client;
+            //update data_individuals here also
+            $("#jsgrid-slots").jsGrid("refresh");
+            $("#detailsDialogSlot").dialog("close");
         };
+
         $("#detailsDialogSlot").dialog("option", "title", dialogType + " Client")
             .dialog("open");
     };
@@ -154,21 +192,14 @@ $(function () {
         }
     });
 
-    var formSubmitHandler = $.noop;
-
-    var saveClient = function (client) {
-        var allocated = [];
-        $("#preference input").each(function (index, value) {
-            if (value.checked) allocated.push(value.id);
-        });
-        client["allocated"] = allocated.join(";");
-        data_individuals[client.SrNum - 1] = client;
-        $("#jsgrid-preference").jsGrid("refresh");
-        $("#detailsDialogPref").dialog("close");
-    };
+    $("#detailsFormSlot").validate({
+        submitHandler: function () {
+            formSubmitHandler();
+        }
+    });
 
     $("#saveFiles").click(function () {
-        if (!uploaded_individuals) alert("Load both files first !");
+        if (!uploaded_individuals || !uploaded_groups) alert("Load both files first !");
         else {
             var data = CSV.objectToCsv(data_individuals, { columns: headings });
             var blob = new Blob([data], { type: 'text/csv' });
