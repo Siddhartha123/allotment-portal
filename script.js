@@ -62,9 +62,6 @@ $(function () {
             }
             document.getElementById("file-slots").style.display = "none";
             uploaded_groups = true;
-            /*
-            Update preference data in data_groups from data_individuals here
-            */
             $("#jsgrid-slots").jsGrid({
                 height: "100%",
                 width: "100%",
@@ -100,7 +97,7 @@ $(function () {
             $("#detailsFormPref").find(".error").removeClass("error");
         }
     });
-    
+
     $("#detailsDialogSlot").dialog({
         autoOpen: false,
         width: 400,
@@ -135,12 +132,31 @@ $(function () {
         formSubmitHandler = function () {
             allocated = [];
             $("#preference input").each(function (index, value) {
-                if (value.checked) allocated.push(value.id);
+                if (value.checked) {
+                    allocated.push(value.id);
+                    group = data_groups.find(obj => { return obj["Unique-id"] == value.id });
+                    y = group.allocated == null ? [] : group.allocated.split(";");
+                    if ($.inArray(client["Unique-id"], y) == -1)
+                        y.push(client["Unique-id"]);
+                    group.allocated = y.join(";");
+                    data_groups[group["SrNum"] - 1] = group;
+                }
+                else {
+                    group = data_groups.find(obj => { return obj["Unique-id"] == value.id });
+                    //check if group found or not
+                    y = group.allocated == null ? [] : group.allocated.split(";");
+                    index = y.indexOf(client["Unique-id"]);
+                    if (index > -1) {
+                        y.splice(index, 1);
+                        group.allocated = y.length > 0 ? y.join(";") : null;
+                        data_groups[group["SrNum"] - 1] = group;
+                    }
+                }
             });
             client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
             data_individuals[client.SrNum - 1] = client;
-            //update data_ggroups here also
             $("#jsgrid-preference").jsGrid("refresh");
+            $("#jsgrid-slots").jsGrid("refresh");
             $("#detailsDialogPref").dialog("close");
         };
 
@@ -173,11 +189,30 @@ $(function () {
         formSubmitHandler = function () {
             allocated = [];
             $("#slot input").each(function (index, value) {
-                if (value.checked) allocated.push(value.id);
+                if (value.checked) {
+                    allocated.push(value.id);
+                    individual = data_individuals.find(obj => { return obj["Unique-id"] == value.id });
+                    y = individual.allocated == null ? [] : individual.allocated.split(";");
+                    if ($.inArray(client["Unique-id"], y) == -1)
+                        y.push(client["Unique-id"]);
+                    individual.allocated = y.join(";");
+                    data_individuals[individual["SrNum"] - 1] = individual;
+                }
+                else {
+                    individual = data_individuals.find(obj => { return obj["Unique-id"] == value.id });
+                    //check if individual found or not
+                    y = individual.allocated == null ? [] : individual.allocated.split(";");
+                    index = y.indexOf(client["Unique-id"]);
+                    if (index > -1) {
+                        y.splice(index, 1);
+                        individual.allocated = y.length > 0 ? y.join(";") : null;
+                        data_individuals[individual["SrNum"] - 1] = individual;
+                    }
+                }
             });
             client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
             data_groups[client.SrNum - 1] = client;
-            //update data_individuals here also
+            $("#jsgrid-preference").jsGrid("refresh");
             $("#jsgrid-slots").jsGrid("refresh");
             $("#detailsDialogSlot").dialog("close");
         };
