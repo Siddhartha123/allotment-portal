@@ -45,7 +45,7 @@
 
         .form-group input,
         .form-group select {
-            width: 250px;
+            width: 175px;
             float: right;
         }
 
@@ -84,7 +84,8 @@
             height: 100% !important;
         }
 
-        .jsgrid-row, .jsgrid-alt-row{
+        .jsgrid-row,
+        .jsgrid-alt-row {
             cursor: pointer;
         }
     </style>
@@ -126,14 +127,14 @@
                                 <label for="choice1" value="choice1"></label>
                                 <input id="choice1" name="choice1" type="checkbox" />
                             </div>
-                            </div>
+                        </div>
                         <div class="form-group">
                             <button class="ui-button ui-widget ui-corner-all ui-button-text-only" type="submit" id="save">Save</button>
                         </div>
                     </form>
                 </div>
             </div>
-            
+
             <div class="col">
                 <div id="jsgrid-slots" style="background-color: #ffffff;"></div>
                 <!-- Slots Dialog box -->
@@ -141,7 +142,12 @@
                     <form id="detailsFormSlot">
                         <div class="form-group">
                             <label for="name">Name:</label>
-                            <input id="nameSlot" name="name" type="text" />
+                            <p id="nameSlot"></p>
+                        </div>
+                        <div id="slot">
+                            <p><strong>Individuals who preferred this :</strong></p>
+                            <div class="form-group">
+                            </div>
                         </div>
                         <div class="form-group">
                             <button class="ui-button ui-widget" type="submit" id="save">Save</button>
@@ -154,7 +160,7 @@
             <div class="col" style="margin-top:25px">
                 <div class="form-group" style="text-align: center;"><label class="control-label">
                         <h3>Save files</h3>
-                    </label> <button id="saveFiles" class="ui-button ui-widget" >Save</button></div>
+                    </label> <button id="saveFiles" class="ui-button ui-widget">Save</button></div>
             </div>
         </div>
     </div>
