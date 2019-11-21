@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>slot-preference-matching</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="demos.css" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,600,400' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="./jsgrid/css/jsgrid.css" />
     <link rel="stylesheet" type="text/css" href="./jsgrid/css/theme.css" />
@@ -40,7 +40,7 @@
         .ui-widget select,
         .ui-widget button {
             font-family: 'Helvetica Neue Light', 'Open Sans', Helvetica;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .form-group input,
@@ -88,39 +88,47 @@
         .jsgrid-alt-row {
             cursor: pointer;
         }
+
+        .row {
+            text-align: center;
+        }
+
+        #individuals_file_input,
+        #groups_file_input {
+            display: inline-block;
+            width: 50
+        }
     </style>
 </head>
 
-<body style="background-color: rgb(75, 191, 107);">
-    <div class="container" style="margin: 25 px;">
-        <div class="row" style="margin-top: 15 px;">
-            <div class="col">
-                <div class="form-group"><label class="control-label">
-                        <h3>Individuals </h3>
+<body style="background-color: rgb(142, 231, 167);">
+    <div class="container">
+        <div class="row" style="margin-top: 15px;">
+            <div class="col" id="individuals_file_input">
+                <div class="form-group" style="width: 50vw;display: inline-block;">
+                    <label class="control-label">
+                        <h3>Choose first file : Invigilators </h3>
                     </label> <input id="file-preferences" type="file"></div>
             </div>
-            <div class="col">
-                <div class="form-group"><label class="control-label">
-                        <h3>Groups </h3>
-                    </label><input id="file-slots" type="file" style="display: none"></div>
+            <div class="col" id="groups_file_input" style="display: none">
+                <div class="col">
+                    <div class="form-group" style="width: 50vw;display: inline-block;">
+                        <label class="control-label">
+                            <h3>Choose second file : exam slots </h3>
+                        </label><input id="file-slots" type="file"></div>
+                </div>
             </div>
         </div>
-        <div class="row" style="margin-top: 15 px;">
+        <div class="row" style="margin-top: 15px;">
             <div class="col-md-6">
-                <div id="jsgrid-preference" style="background-color: #ffffff;"></div>
+                <div id="jsgrid-preference" style="background-color: #ffffff;max-height:65vh;"></div>
                 <!-- Preference Dialog box -->
                 <div id="detailsDialogPref">
-                    <form id="detailsFormPref">
-                        <div class="form-group">
-                            <label for="name">Name:</label>
+                    <form id="detailsFormPref" class="form">
+                        <div class="form-group row">
+                            <label for="name">Name : </label>
                             <p id="namePref"></p>
                         </div>
-                        <!-- <div class="form-group">
-                            <label for="preference">Preferences</label>
-                            <select id="preference" name="preference">
-                                <option value="">(Select)</option>
-                            </select>
-                        </div> -->
                         <div id="preference">
                             <p><strong>Preferences :</strong></p>
                             <div class="form-group">
@@ -129,22 +137,23 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <button class="ui-button ui-widget ui-corner-all ui-button-text-only" type="submit" id="save">Save</button>
+                            <button class="ui-button ui-widget ui-corner-all ui-button-text-only" type="submit"
+                                id="save">Save</button>
                         </div>
                     </form>
                 </div>
             </div>
 
             <div class="col">
-                <div id="jsgrid-slots" style="background-color: #ffffff;"></div>
+                <div id="jsgrid-slots" style="background-color: #ffffff;max-height:65vh;"></div>
                 <!-- Slots Dialog box -->
                 <div id="detailsDialogSlot">
-                    <form id="detailsFormSlot">
-                        <div class="form-group">
-                            <label for="name">Name:</label>
+                    <form id="detailsFormSlot" class="form">
+                        <div class="form-group row">
+                            <label for="name">Name : </label>
                             <p id="nameSlot"></p>
                         </div>
-                        <div id="slot">
+                        <div id="slot" class="form-group">
                             <p><strong>Individuals who preferred this :</strong></p>
                             <div class="form-group">
                             </div>
@@ -156,7 +165,20 @@
                 </div>
             </div>
         </div>
-        <div class="row" style="margin-top: 15 px;">
+        <div class="row" style="margin-top: 15px;">
+            <div class="col-md-6" style="margin-top:25px">
+                <div class="form-group" style="text-align: center;">
+                remaining individuals
+                </div>
+            </div>
+
+            <div class="col-md-6" style="margin-top:25px">
+                <div class="form-group" style="text-align: center;">
+                remaining individuals
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 15px;">
             <div class="col" style="margin-top:25px">
                 <div class="form-group" style="text-align: center;"><label class="control-label">
                         <h3>Save files</h3>
@@ -164,6 +186,9 @@
             </div>
         </div>
     </div>
+    <div class="row page-footer">
+        <div class="col text-center py-3"> Designed by SysAd, EE Dept., IIT Bombay, October 2019
+        </div>
     </div>
     <!-- <script src="assets/js/jquery.min.js"></script> -->
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>

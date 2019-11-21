@@ -6,16 +6,17 @@
 
 html {
     height: 100%;
+    overflow: hidden;
 }
 
-body {
+body,form {
     height: 100%;
     padding: 10px;
     color: #262626;
     font-family: 'Helvetica Neue Light', 'Open Sans', Helvetica;
-    font-size: 14px;
-    font-weight: 300;
-}
+    font-size: 16px;
+    overflow: hidden;
+    }
 
 h1 {
     margin: 0 0 8px 0;
@@ -48,7 +49,7 @@ a:hover {
 input, button, select {
     font-family: 'Helvetica Neue Light', 'Open Sans', Helvetica;
     font-weight: 300;
-    font-size: 14px;
+    font-size: 16px;
     padding: 2px;
 }
 
@@ -80,3 +81,29 @@ iframe[name='demo'] {
     height: 100%;
     border: none;
 }
+
+.page-footer{
+    position: absolute;
+    bottom: 0;
+    width: 100vw;
+}
+
+.container{
+    height: calc(100vh - 100px);
+}
+
+.exceed_cap{
+    font-weight:bold;
+    color:red;
+}
+
+.within_cap{
+    font-weight:bold;
+    color:green;
+}
+
+.full_cap{
+    font-weight:bold;
+    color:blue;
+}
+
