@@ -1,30 +1,47 @@
 $(function () {
     var data_individuals = [];
     var data_groups = [];
-    var headings = [];
+    var headings = ["SrNum", "Full-Name", "Unique-id", "capacity", "allocated", "choices"];
     var uploaded_individuals = false;
     var uploaded_groups = false;
     var formSubmitHandler = $.noop;
+
+    function findIndex(data, where, what) {
+        var options = {
+            data: data,
+            where: where,
+            what: what
+        },
+            result = -1;
+        data.some(function (item, i) {
+            if (item[options.where] === options.what) {
+                result = i;
+                return true;
+            }
+        });
+        return result;
+    }
     document.getElementById('file-preferences').onchange = function () {
         var file = this.files[0];
         var reader = new FileReader();
         reader.onload = function (progressEvent) {
             var lines = this.result.split('\n');
-            headings = lines[0].split(",");
+            //headings = lines[0].split(",");
             for (var line = 1; line < lines.length; line++) {
                 if (lines[line] != "") {
                     var obj = CSV.csvToObject(lines[line], { columns: headings });
                     data_individuals.push(obj[0]);
                 }
             }
-            document.getElementById("file-preferences").style.display = "none";
-            document.getElementById("file-slots").style.display = "block";
+            document.getElementById("individuals_file_input").style.display = "none";
+            document.getElementById("groups_file_input").style.display = "block";
             uploaded_individuals = true;
             $("#jsgrid-preference").jsGrid({
                 height: "100%",
                 width: "100%",
                 autoload: true,
                 paging: false,
+                sorting: true,
                 controller: {
                     loadData: function () {
                         return data_individuals;
@@ -36,13 +53,29 @@ $(function () {
                 rowRenderer: function (item) {
                     var user = item;
                     var $info = $("<div>").addClass("client-info")
-                        .append($("<p>").append($("<strong>").text(user["Full-Name"])));
+                        .append($("<p>").text(user["Full-Name"]));
+                    var user_allocated = user["allocated"] == null ? 0 : user["allocated"].split(";").length;
+                    var p_class = user_allocated > user.capacity ? "exceed_cap" : (user_allocated == user.capacity ? "full_cap" : "within_cap");
                     var $data = $("<div>").addClass("client-info")
-                        .append($("<p>").append($("<strong>").text((user["allocated"] == null ? 0 : user["allocated"].split(";").length) + " / " + user.capacity)));
-                    return $("<tr>").append($("<td>").append($info)).append($("<td>").append($data));
+                        .append($("<p>").addClass(p_class).text(user_allocated + " / " + user.capacity));
+                    return $("<tr>").append($("<td>").append(user["Unique-id"])).append($("<td>").append($info)).append($("<td>").append($data));
                 },
                 fields: [
-                    { title: "Candidates" }, { title: "slots alloted" }]
+                    {
+                        title: "ID", name: "Unique-id",
+                        sorter: function (id1, id2) {
+                            var idx1 = findIndex(data_individuals, "Unique-id", id1);
+                            var idx2 = findIndex(data_individuals, "Unique-id", id2);
+                            allocated1 = data_individuals[idx1].allocated;
+                            allocated2 = data_individuals[idx2].allocated;
+                            capacity1 = data_individuals[idx1].capacity;
+                            capacity2 = data_individuals[idx2].capacity;
+
+                            var user1_allocated = allocated1 == null ? 0 : allocated1.split(";").length;
+                            var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
+                            return user1_allocated - capacity1 > user2_allocated - capacity2;
+                        }
+                    }, { title: "Candidates" }, { title: "slots alloted" }]
             });
         };
         reader.readAsText(file);
@@ -53,14 +86,14 @@ $(function () {
         var reader = new FileReader();
         reader.onload = function (progressEvent) {
             var lines = this.result.split('\n');
-            var headings = lines[0].split(",");
+            //var headings = lines[0].split(",");
             for (var line = 1; line < lines.length; line++) {
                 if (lines[line] != "") {
                     var obj = CSV.csvToObject(lines[line], { columns: headings });
                     data_groups.push(obj[0]);
                 }
             }
-            document.getElementById("file-slots").style.display = "none";
+            document.getElementById("groups_file_input").style.display = "none";
             uploaded_groups = true;
             $("#jsgrid-slots").jsGrid({
                 height: "100%",
@@ -78,9 +111,10 @@ $(function () {
                 rowRenderer: function (item) {
                     var grp = item;
                     var $info = $("<div>").addClass("client-info")
-                        .append($("<p>").append($("<strong>").text(grp["Full-Name"])));
-
-                    return $("<tr>").append($("<td>").append(grp["Unique-id"])).append($("<td>").append($info)).append($("<td>").append((grp.allocated == null ? 0 : (grp.allocated.split(";").length)) + " / " + grp.capacity));
+                        .append($("<p>").text(grp["Full-Name"]));
+                    var grp_allocated = grp.allocated == null ? 0 : (grp.allocated.split(";").length);
+                    var p_class = grp_allocated > grp.capacity ? "within_cap" : (grp_allocated == grp.capacity ? "full_cap" : "exceed_cap");
+                    return $("<tr>").append($("<td>").append(grp["Unique-id"])).append($("<td>").append($info)).append($("<td>").append("<p>").addClass(p_class).text(grp_allocated + " / " + grp.capacity));
                 },
                 fields: [
                     { title: "Course code" }, { title: "Course name" }, { title: "Requirement" }]
@@ -139,7 +173,8 @@ $(function () {
                     if ($.inArray(client["Unique-id"], y) == -1)
                         y.push(client["Unique-id"]);
                     group.allocated = y.join(";");
-                    data_groups[group["SrNum"] - 1] = group;
+                    var idx = findIndex(data_groups, "Unique-id", group["Unique-id"]);
+                    data_groups[idx] = group;
                 }
                 else {
                     group = data_groups.find(obj => { return obj["Unique-id"] == value.id });
@@ -149,12 +184,14 @@ $(function () {
                     if (index > -1) {
                         y.splice(index, 1);
                         group.allocated = y.length > 0 ? y.join(";") : null;
-                        data_groups[group["SrNum"] - 1] = group;
+                        var idx = findIndex(data_groups, "Unique-id", group["Unique-id"]);
+                        data_groups[idx] = group;
                     }
                 }
             });
             client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
-            data_individuals[client.SrNum - 1] = client;
+            var idx = findIndex(data_individuals, "Unique-id", client["Unique-id"]);
+            data_individuals[idx] = client;
             $("#jsgrid-preference").jsGrid("refresh");
             $("#jsgrid-slots").jsGrid("refresh");
             $("#detailsDialogPref").dialog("close");
@@ -196,7 +233,8 @@ $(function () {
                     if ($.inArray(client["Unique-id"], y) == -1)
                         y.push(client["Unique-id"]);
                     individual.allocated = y.join(";");
-                    data_individuals[individual["SrNum"] - 1] = individual;
+                    var idx = findIndex(data_individuals, "SrNum", individual["SrNum"]);
+                    data_individuals[idx] = individual;
                 }
                 else {
                     individual = data_individuals.find(obj => { return obj["Unique-id"] == value.id });
@@ -206,12 +244,14 @@ $(function () {
                     if (index > -1) {
                         y.splice(index, 1);
                         individual.allocated = y.length > 0 ? y.join(";") : null;
-                        data_individuals[individual["SrNum"] - 1] = individual;
+                        var idx = findIndex(data_individuals, "SrNum", individual["SrNum"]);
+                        data_individuals[idx] = individual;
                     }
                 }
             });
             client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
-            data_groups[client.SrNum - 1] = client;
+            var idx = findIndex(data_groups, "Unique-id", client["Unique-id"]);
+            data_groups[idx] = client;
             $("#jsgrid-preference").jsGrid("refresh");
             $("#jsgrid-slots").jsGrid("refresh");
             $("#detailsDialogSlot").dialog("close");
