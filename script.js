@@ -115,6 +115,8 @@ $(function () {
                 }
             }
             document.getElementById("groups_file_input").style.display = "none";
+            document.getElementById("count_stats").style.display = "flex";
+            update_count_display();
             uploaded_groups = true;
             $("#jsgrid-slots").jsGrid({
                 height: "100%",
