@@ -34,71 +34,7 @@
 
     <!-- this script is everything ! -->
     <script src="./script.js"></script>
-    <style>
-        .ui-widget *,
-        .ui-widget input,
-        .ui-widget select,
-        .ui-widget button {
-            font-family: 'Helvetica Neue Light', 'Open Sans', Helvetica;
-            font-size: 16px;
-        }
 
-        .form-group input,
-        .form-group select {
-            width: 175px;
-            float: right;
-        }
-
-        .form-group {
-            margin: 30px 0;
-        }
-
-        .form-group:first-child {
-            margin-top: 10px;
-        }
-
-        .form-group:last-child {
-            margin-bottom: 10px;
-        }
-
-        .form-group button {
-            display: block;
-            width: 100px;
-            margin: 0 auto;
-        }
-
-        input.error,
-        select.error {
-            border: 1px solid #ff9999;
-            background: #ffeeee;
-        }
-
-        label.error {
-            float: right;
-            margin-left: 100px;
-            font-size: .8em;
-            color: #ff6666;
-        }
-
-        .jsgrid-grid-body {
-            height: 100% !important;
-        }
-
-        .jsgrid-row,
-        .jsgrid-alt-row {
-            cursor: pointer;
-        }
-
-        .row {
-            text-align: center;
-        }
-
-        #individuals_file_input,
-        #groups_file_input {
-            display: inline-block;
-            width: 50
-        }
-    </style>
 </head>
 
 <body style="background-color: rgb(142, 231, 167);">
@@ -167,15 +103,41 @@
         </div>
         <div class="row" style="margin-top: 15px;">
             <div class="col-md-6" style="margin-top:25px">
-                <div class="form-group" style="text-align: center;">
-                remaining individuals
-                </div>
+                <table class="table table-bordered bg-white">
+                    <tbody>
+                        <tr>
+                            <td>Individuals with full allotment</td>
+                            <td id="ind_cnt_eq"></td>
+                        </tr>
+                        <tr>
+                            <td>Individuals with less allotment</td>
+                            <td id="ind_cnt_less"></td>
+                        </tr>
+                        <tr>
+                            <td>Individuals with more allotment</td>
+                            <td id="ind_cnt_exceed"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <div class="col-md-6" style="margin-top:25px">
-                <div class="form-group" style="text-align: center;">
-                remaining individuals
-                </div>
+                <table class="table table-bordered bg-white">
+                    <tbody>
+                        <tr>
+                            <td>Groups with full allotment</td>
+                            <td id="grp_cnt_eq"></td>
+                        </tr>
+                        <tr>
+                            <td>Groups with less allotment</td>
+                            <td id="grp_cnt_less"></td>
+                        </tr>
+                        <tr>
+                            <td>Groups with more allotment</td>
+                            <td id="grp_cnt_exceed"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         <div class="row" style="margin-top: 15px;">
