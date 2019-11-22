@@ -21,6 +21,27 @@ $(function () {
         });
         return result;
     }
+
+    function update_count() {
+        //update count of individuals and groups
+        var ind_cnt_exceed = 0, ind_cnt_less = 0, ind_cnt_eq = 0;
+        var grp_cnt_exceed = 0, grp_cnt_less = 0, grp_cnt_eq = 0;
+
+        $.each(data_individuals, function (index, ind) {
+            allocated = ind.allocated == null ? 0 : ind.allocated.split(";").length;
+            if (allocated == ind.capacity) ind_cnt_eq++;
+            else if (allocated > ind.capacity) ind_cnt_exceed++;
+            else ind_cnt_less++;
+        });
+
+        $.each(data_groups, function (index, grp) {
+            allocated = grp.allocated == null ? 0 : grp.allocated.split(";").length;
+            if (allocated == grp.capacity) grp_cnt_eq++;
+            else if (allocated > grp.capacity) grp_cnt_exceed++;
+            else grp_cnt_less++;
+        });
+        return { "individuals": { "equal": ind_cnt_eq, "exceed": ind_cnt_exceed, "less": ind_cnt_less }, "groups": { "equal": grp_cnt_eq, "exceed": grp_cnt_exceed, "less": grp_cnt_less } };
+    }
     document.getElementById('file-preferences').onchange = function () {
         var file = this.files[0];
         var reader = new FileReader();
@@ -195,6 +216,11 @@ $(function () {
             $("#jsgrid-preference").jsGrid("refresh");
             $("#jsgrid-slots").jsGrid("refresh");
             $("#detailsDialogPref").dialog("close");
+            count = update_count();
+            $("#ind_cnt_exceed").html(count.individuals.exceed);
+            $("#ind_cnt_less").html(count.individuals.less);
+            $("#ind_cnt_eq").html(count.individuals.equal);
+
         };
 
         $("#detailsDialogPref").dialog("option", "title", dialogType + " Client")
@@ -255,6 +281,7 @@ $(function () {
             $("#jsgrid-preference").jsGrid("refresh");
             $("#jsgrid-slots").jsGrid("refresh");
             $("#detailsDialogSlot").dialog("close");
+            console.log(update_count());
         };
 
         $("#detailsDialogSlot").dialog("option", "title", dialogType + " Client")
