@@ -42,6 +42,16 @@ $(function () {
         });
         return { "individuals": { "equal": ind_cnt_eq, "exceed": ind_cnt_exceed, "less": ind_cnt_less }, "groups": { "equal": grp_cnt_eq, "exceed": grp_cnt_exceed, "less": grp_cnt_less } };
     }
+
+    function update_count_display() {
+        count = update_count();
+        $("#ind_cnt_exceed").html(count.individuals.exceed);
+        $("#ind_cnt_less").html(count.individuals.less);
+        $("#ind_cnt_eq").html(count.individuals.equal);
+        $("#grp_cnt_exceed").html(count.groups.exceed);
+        $("#grp_cnt_less").html(count.groups.less);
+        $("#grp_cnt_eq").html(count.groups.equal);
+    }
     document.getElementById('file-preferences').onchange = function () {
         var file = this.files[0];
         var reader = new FileReader();
@@ -96,7 +106,7 @@ $(function () {
                             var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
                             return user1_allocated - capacity1 > user2_allocated - capacity2;
                         }
-                    }, { title: "Candidates" }, { title: "slots alloted" }]
+                    }, { title: "Candidates", name: "Full-Name" }, { title: "slots alloted" }]
             });
         };
         reader.readAsText(file);
@@ -123,6 +133,7 @@ $(function () {
                 width: "100%",
                 autoload: true,
                 paging: false,
+                sorting: true,
                 controller: {
                     loadData: function () {
                         return data_groups;
@@ -140,7 +151,21 @@ $(function () {
                     return $("<tr>").append($("<td>").append(grp["Unique-id"])).append($("<td>").append($info)).append($("<td>").append("<p>").addClass(p_class).text(grp_allocated + " / " + grp.capacity));
                 },
                 fields: [
-                    { title: "Course code" }, { title: "Course name" }, { title: "Requirement" }]
+                    {
+                        title: "Course code", name: "Unique-id",
+                        sorter: function (id1, id2) {
+                            var idx1 = findIndex(data_groups, "Unique-id", id1);
+                            var idx2 = findIndex(data_groups, "Unique-id", id2);
+                            allocated1 = data_groups[idx1].allocated;
+                            allocated2 = data_groups[idx2].allocated;
+                            capacity1 = data_groups[idx1].capacity;
+                            capacity2 = data_groups[idx2].capacity;
+
+                            var user1_allocated = allocated1 == null ? 0 : allocated1.split(";").length;
+                            var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
+                            return user1_allocated - capacity1 > user2_allocated - capacity2;
+                        }
+                    }, { title: "Course name", name: "Full-Name" }, { title: "Requirement" }]
             });
         };
         reader.readAsText(file);
@@ -218,11 +243,7 @@ $(function () {
             $("#jsgrid-preference").jsGrid("refresh");
             $("#jsgrid-slots").jsGrid("refresh");
             $("#detailsDialogPref").dialog("close");
-            count = update_count();
-            $("#ind_cnt_exceed").html(count.individuals.exceed);
-            $("#ind_cnt_less").html(count.individuals.less);
-            $("#ind_cnt_eq").html(count.individuals.equal);
-
+            update_count_display();
         };
 
         $("#detailsDialogPref").dialog("option", "title", dialogType + " Client")
@@ -283,7 +304,7 @@ $(function () {
             $("#jsgrid-preference").jsGrid("refresh");
             $("#jsgrid-slots").jsGrid("refresh");
             $("#detailsDialogSlot").dialog("close");
-            console.log(update_count());
+            update_count_display();
         };
 
         $("#detailsDialogSlot").dialog("option", "title", dialogType + " Client")
