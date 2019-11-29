@@ -219,24 +219,30 @@ $(function () {
             $("#preference input").each(function (index, value) {
                 if (value.checked) {
                     allocated.push(value.id);
-                    group = data_groups.find(obj => { return obj["Unique-id"] == value.id });
-                    y = group.allocated == null ? [] : group.allocated.split(";");
-                    if ($.inArray(client["Unique-id"], y) == -1)
-                        y.push(client["Unique-id"]);
-                    group.allocated = y.join(";");
-                    var idx = findIndex(data_groups, "Unique-id", group["Unique-id"]);
-                    data_groups[idx] = group;
-                }
-                else {
-                    group = data_groups.find(obj => { return obj["Unique-id"] == value.id });
-                    //check if group found or not
-                    y = group.allocated == null ? [] : group.allocated.split(";");
-                    index = y.indexOf(client["Unique-id"]);
-                    if (index > -1) {
-                        y.splice(index, 1);
-                        group.allocated = y.length > 0 ? y.join(";") : null;
+                    group = data_groups.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
+                    if (group == undefined) alert(value.id + "not found");
+                    else {
+                        y = group.allocated == null ? [] : group.allocated.split(";");
+                        if ($.inArray(client["Unique-id"], y) == -1)
+                            y.push(client["Unique-id"]);
+                        group.allocated = y.join(";");
                         var idx = findIndex(data_groups, "Unique-id", group["Unique-id"]);
                         data_groups[idx] = group;
+                    }
+                }
+                else {
+                    group = data_groups.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
+                    //check if group found or not
+                    if (group == undefined) alert(value.id + "not found");
+                    else {
+                        y = group.allocated == null ? [] : group.allocated.split(";");
+                        index = y.indexOf(client["Unique-id"]);
+                        if (index > -1) {
+                            y.splice(index, 1);
+                            group.allocated = y.length > 0 ? y.join(";") : null;
+                            var idx = findIndex(data_groups, "Unique-id", group["Unique-id"]);
+                            data_groups[idx] = group;
+                        }
                     }
                 }
             });
