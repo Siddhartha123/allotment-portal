@@ -7,14 +7,9 @@ $(function () {
     var formSubmitHandler = $.noop;
 
     function findIndex(data, where, what) {
-        var options = {
-            data: data,
-            where: where,
-            what: what
-        },
-            result = -1;
+        result = -1;
         data.some(function (item, i) {
-            if (item[options.where] === options.what) {
+            if (item[where] === what) {
                 result = i;
                 return true;
             }
