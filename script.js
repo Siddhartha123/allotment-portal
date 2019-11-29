@@ -73,9 +73,13 @@ $(function () {
                 autoload: true,
                 paging: false,
                 sorting: true,
+                filtering: true,
                 controller: {
-                    loadData: function () {
-                        return data_individuals;
+                    loadData: function (filter) {
+                        return $.grep(data_individuals, function (individual) {
+                            return (!filter["Full-Name"] || individual["Full-Name"].indexOf(filter["Full-Name"]) > -1)
+                                && (!("" + filter["Unique-id"]) || ("" + individual["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1);
+                        });
                     }
                 },
                 rowClick: function (args) {
@@ -105,8 +109,8 @@ $(function () {
                             var user1_allocated = allocated1 == null ? 0 : allocated1.split(";").length;
                             var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
                             return user1_allocated - capacity1 > user2_allocated - capacity2;
-                        }
-                    }, { title: "Candidates", name: "Full-Name" }, { title: "slots alloted" }]
+                        }, type: "text"
+                    }, { title: "Candidates", name: "Full-Name", type: "text" }, { title: "slots alloted", name: "allotted" }]
             });
         };
         reader.readAsText(file);
@@ -134,9 +138,13 @@ $(function () {
                 autoload: true,
                 paging: false,
                 sorting: true,
+                filtering: true,
                 controller: {
-                    loadData: function () {
-                        return data_groups;
+                    loadData: function (filter) {
+                        return $.grep(data_groups, function (group) {
+                            return (!filter["Full-Name"] || group["Full-Name"].indexOf(filter["Full-Name"]) > -1)
+                                && (!("" + filter["Unique-id"]) || ("" + group["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1);
+                        });
                     }
                 },
                 rowClick: function (args) {
@@ -164,8 +172,8 @@ $(function () {
                             var user1_allocated = allocated1 == null ? 0 : allocated1.split(";").length;
                             var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
                             return user1_allocated - capacity1 > user2_allocated - capacity2;
-                        }
-                    }, { title: "Course name", name: "Full-Name" }, { title: "Requirement" }]
+                        }, type: "text"
+                    }, { title: "Course name", name: "Full-Name", type: "text" }, { title: "Requirement" }]
             });
         };
         reader.readAsText(file);
