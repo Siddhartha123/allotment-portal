@@ -318,6 +318,22 @@ $(function () {
             .dialog("open");
     };
 
+    $("#custom_check_pref").change(function () {
+        if ($(this).is(":checked") && $("#custom_input_pref").val() != "") {
+            add_check_box("#preference", $("#custom_input_pref").val(), true);
+            $(this).prop("checked", false);
+            $("#custom_input_pref").val('');
+        }
+    });
+
+    $("#custom_check_slot").change(function () {
+        if ($(this).is(":checked") && $("#custom_input_slot").val() != "") {
+            add_check_box("#slot", $("#custom_input_slot").val(), true);
+            $(this).prop("checked", false);
+            $("#custom_input_slot").val('');
+        }
+    });
+
     $("#detailsFormPref").validate({
         submitHandler: function () {
             formSubmitHandler();

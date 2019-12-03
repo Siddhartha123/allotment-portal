@@ -163,3 +163,16 @@ iframe[name='demo'] {
     font-weight: bold;
     color: blue;
 }
+
+#custom_input_pref,#custom_input_slot {
+    width: 150px;
+    float: left;
+}
+
+input[type=checkbox] {
+    margin-top: 6px;
+}
+
+#custom_pref,#custom_slot {
+    margin-top: 20px;
+}
