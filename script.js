@@ -82,8 +82,9 @@ $(function () {
                 controller: {
                     loadData: function (filter) {
                         return $.grep(data_individuals, function (individual) {
+                            var allocated = individual["allocated"] == null ? 0 : individual["allocated"].split(";").length;
                             return (!filter["Full-Name"] || individual["Full-Name"].indexOf(filter["Full-Name"]) > -1)
-                                && (!("" + filter["Unique-id"]) || ("" + individual["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1);
+                                && (!("" + filter["Unique-id"]) || ("" + individual["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1) && ((filter["allocated"] == null) || allocated == filter["allocated"]);
                         });
                     }
                 },
@@ -147,8 +148,9 @@ $(function () {
                 controller: {
                     loadData: function (filter) {
                         return $.grep(data_groups, function (group) {
+                            var allocated = group["allocated"] == null ? 0 : group["allocated"].split(";").length;
                             return (!filter["Full-Name"] || group["Full-Name"].indexOf(filter["Full-Name"]) > -1)
-                                && (!("" + filter["Unique-id"]) || ("" + group["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1);
+                                && (!("" + filter["Unique-id"]) || ("" + group["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1) && (filter["allocated"] == null || filter["allocated"] == allocated);
                         });
                     }
                 },
