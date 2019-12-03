@@ -17,6 +17,16 @@ $(function () {
         return result;
     }
 
+    function add_check_box(id, for_element, checked) {
+        $(id).append($("<div class=form-group>").append($('<label>', {
+            for: for_element
+        }).text(for_element)).append($('<input>', {
+            type: 'checkbox',
+            id: for_element,
+            name: for_element
+        }).prop("checked", checked)));
+    }
+
     function update_count() {
         //update count of individuals and groups
         var ind_cnt_exceed = 0, ind_cnt_less = 0, ind_cnt_eq = 0;
@@ -204,13 +214,7 @@ $(function () {
         });
         if (associated_slots != []) {
             $.each(associated_slots, function (index, slot) {
-                $("#preference").append($("<div class=form-group>").append($('<label>', {
-                    for: slot
-                }).text(slot)).append($('<input>', {
-                    type: 'checkbox',
-                    id: slot,
-                    name: slot
-                }).prop("checked", !($.inArray(slot, allotted_slots) == -1))));
+                add_check_box("#preference", slot, !($.inArray(slot, allotted_slots) == -1));
             });
         }
 
@@ -271,13 +275,7 @@ $(function () {
         });
         if (associated_slots != []) {
             $.each(associated_slots, function (index, slot) {
-                $("#slot").append($("<div class=form-group>").append($('<label>', {
-                    for: slot
-                }).text(slot)).append($('<input>', {
-                    type: 'checkbox',
-                    id: slot,
-                    name: slot
-                }).prop("checked", !($.inArray(slot, allotted_slots) == -1))));
+                add_check_box("#slot", slot, !($.inArray(slot, allotted_slots) == -1));
             });
         }
 
