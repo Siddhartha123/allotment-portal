@@ -194,7 +194,7 @@ $(function () {
                 }
             }
             document.getElementById("groups_file_input").style.display = "none";
-            document.getElementById("count_stats").style.display = "flex";
+            $(".count_stats").css("display","flex");
             update_count_display();
             uploaded_groups = true;
             $("#jsgrid-slots").jsGrid({
@@ -218,15 +218,15 @@ $(function () {
                     $("#nameSlot").html(client["Full-Name"]);
                     $("#slot div").remove();
 
-        var allotted_slots = client["allocated"] == null ? [] : client["allocated"].split(";");
-        var associated_slots = client.choices == null ? [] : client.choices.split(";");
-        $.each(allotted_slots, function (index, slot) {
-            if ($.inArray(slot, associated_slots) == -1)
-                associated_slots.push(slot);
-        });
-        if (associated_slots != []) {
-            $.each(associated_slots, function (index, slot) {
-                add_check_box("#slot", slot, !($.inArray(slot, allotted_slots) == -1));
+                    var allotted_slots = client["allocated"] == null ? [] : client["allocated"].split(";");
+                    var associated_slots = client.choices == null ? [] : client.choices.split(";");
+                    $.each(allotted_slots, function (index, slot) {
+                        if ($.inArray(slot, associated_slots) == -1)
+                            associated_slots.push(slot);
+                    });
+                    if (associated_slots != []) {
+                        $.each(associated_slots, function (index, slot) {
+                            add_check_box("#slot", slot, !($.inArray(slot, allotted_slots) == -1));
                         });
                     }
 
@@ -234,34 +234,34 @@ $(function () {
                         allocated = [];
                         $("#slot input").each(function (index, value) {
                             if (value.checked) {
-                    allocated.push(value.id);
-                    individual = data_individuals.find(obj => { return obj["Unique-id"] == value.id });
-                    y = individual.allocated == null ? [] : individual.allocated.split(";");
-                    if ($.inArray(client["Unique-id"], y) == -1)
-                        y.push(client["Unique-id"]);
-                    individual.allocated = y.join(";");
-                    var idx = findIndex(data_individuals, "SrNum", individual["SrNum"]);
-                    data_individuals[idx] = individual;
-                }
-                else {
-                    individual = data_individuals.find(obj => { return obj["Unique-id"] == value.id });
-                    //check if individual found or not
-                    y = individual.allocated == null ? [] : individual.allocated.split(";");
-                    index = y.indexOf(client["Unique-id"]);
-                    if (index > -1) {
-                        y.splice(index, 1);
-                        individual.allocated = y.length > 0 ? y.join(";") : null;
-                        var idx = findIndex(data_individuals, "SrNum", individual["SrNum"]);
-                        data_individuals[idx] = individual;
-                    }
-                }
-            });
-            client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
-            var idx = findIndex(data_groups, "Unique-id", client["Unique-id"]);
-            data_groups[idx] = client;
-            $("#jsgrid-preference").jsGrid("refresh");
-            $("#jsgrid-slots").jsGrid("refresh");
-            $("#detailsDialogSlot").dialog("close");
+                                allocated.push(value.id);
+                                individual = data_individuals.find(obj => { return obj["Unique-id"] == value.id });
+                                y = individual.allocated == null ? [] : individual.allocated.split(";");
+                                if ($.inArray(client["Unique-id"], y) == -1)
+                                    y.push(client["Unique-id"]);
+                                individual.allocated = y.join(";");
+                                var idx = findIndex(data_individuals, "SrNum", individual["SrNum"]);
+                                data_individuals[idx] = individual;
+                            }
+                            else {
+                                individual = data_individuals.find(obj => { return obj["Unique-id"] == value.id });
+                                //check if individual found or not
+                                y = individual.allocated == null ? [] : individual.allocated.split(";");
+                                index = y.indexOf(client["Unique-id"]);
+                                if (index > -1) {
+                                    y.splice(index, 1);
+                                    individual.allocated = y.length > 0 ? y.join(";") : null;
+                                    var idx = findIndex(data_individuals, "SrNum", individual["SrNum"]);
+                                    data_individuals[idx] = individual;
+                                }
+                            }
+                        });
+                        client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
+                        var idx = findIndex(data_groups, "Unique-id", client["Unique-id"]);
+                        data_groups[idx] = client;
+                        $("#jsgrid-preference").jsGrid("refresh");
+                        $("#jsgrid-slots").jsGrid("refresh");
+                        $("#detailsDialogSlot").dialog("close");
                         update_count_display();
                     };
 
