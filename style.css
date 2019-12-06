@@ -9,6 +9,11 @@
     font-size: 16px;
 }
 
+.ui-dialog {
+    max-height: 70vh;
+    overflow: scroll!important;
+}
+
 .form-group input, .form-group select {
     width: 175px;
     float: right;
