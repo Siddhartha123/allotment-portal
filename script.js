@@ -171,9 +171,12 @@ $(function () {
 
                             var user1_allocated = allocated1 == null ? 0 : allocated1.split(";").length;
                             var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
-                            return user1_allocated - capacity1 > user2_allocated - capacity2;
+                            if (user1_allocated != user2_allocated)
+                                return user1_allocated - capacity1 > user2_allocated - capacity2;
+                            else
+                                return user1_allocated > user2_allocated;
                         }, type: "text"
-                    }, { title: "Candidates", name: "Full-Name", type: "text" }, { title: "slots alloted", name: "allotted" }]
+                    }, { title: "Candidates", name: "Full-Name", type: "text" }, { title: "slots alloted", name: "allocated", type: "number" }]
             });
         };
         reader.readAsText(file);
