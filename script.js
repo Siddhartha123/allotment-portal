@@ -62,7 +62,6 @@ $(function () {
         var reader = new FileReader();
         reader.onload = function (progressEvent) {
             var lines = this.result.split('\n');
-            //headings = lines[0].split(",");
             for (var line = 1; line < lines.length; line++) {
                 if (lines[line] != "") {
                     var obj = CSV.csvToObject(lines[line], { columns: headings });
@@ -89,7 +88,65 @@ $(function () {
                     }
                 },
                 rowClick: function (args) {
-                    showIndividual("Edit", args.item);
+                    var client = args.item;
+                    $("#namePref").html(client["Full-Name"]);
+                    $("#preference div").remove();
+
+                    var allotted_slots = client["allocated"] == null ? [] : client["allocated"].split(";");
+                    var associated_slots = client.choices == null ? [] : client.choices.split(";");
+                    $.each(allotted_slots, function (index, slot) {
+                        if ($.inArray(slot, associated_slots) == -1)
+                            associated_slots.push(slot);
+                    });
+                    if (associated_slots != []) {
+                        $.each(associated_slots, function (index, slot) {
+                            add_check_box("#preference", slot, !($.inArray(slot, allotted_slots) == -1));
+                        });
+                    }
+
+                    formSubmitHandlerPref = function () {
+                        allocated = [];
+                        $("#preference input").each(function (index, value) {
+                            if (value.checked) {
+                                allocated.push(value.id);
+                                group = data_groups.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
+                                if (group == undefined) alert(value.id + "not found");
+                                else {
+                                    y = group.allocated == null ? [] : group.allocated.split(";");
+                                    if ($.inArray(client["Unique-id"], y) == -1)
+                                        y.push(client["Unique-id"]);
+                                    group.allocated = y.join(";");
+                                    var idx = findIndex(data_groups, "Unique-id", group["Unique-id"]);
+                                    data_groups[idx] = group;
+                                }
+                            }
+                            else {
+                                group = data_groups.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
+                                //check if group found or not
+                                if (group == undefined) alert(value.id + "not found");
+                                else {
+                                    y = group.allocated == null ? [] : group.allocated.split(";");
+                                    index = y.indexOf(client["Unique-id"]);
+                                    if (index > -1) {
+                                        y.splice(index, 1);
+                                        group.allocated = y.length > 0 ? y.join(";") : null;
+                                        var idx = findIndex(data_groups, "Unique-id", group["Unique-id"]);
+                                        data_groups[idx] = group;
+                                    }
+                                }
+                            }
+                        });
+                        client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
+                        var idx = findIndex(data_individuals, "Unique-id", client["Unique-id"]);
+                        data_individuals[idx] = client;
+                        $("#jsgrid-preference").jsGrid("refresh");
+                        $("#jsgrid-slots").jsGrid("refresh");
+                        $("#detailsDialogPref").dialog("close");
+                        update_count_display();
+                    };
+
+                    $("#detailsDialogPref").dialog("option", "title", "Edit Client")
+                        .dialog("open");
                 },
                 rowRenderer: function (item) {
                     var user = item;
@@ -127,7 +184,6 @@ $(function () {
         var reader = new FileReader();
         reader.onload = function (progressEvent) {
             var lines = this.result.split('\n');
-            //var headings = lines[0].split(",");
             for (var line = 1; line < lines.length; line++) {
                 if (lines[line] != "") {
                     var obj = CSV.csvToObject(lines[line], { columns: headings });
@@ -155,119 +211,9 @@ $(function () {
                     }
                 },
                 rowClick: function (args) {
-                    showGroup("Edit", args.item);
-                },
-                rowRenderer: function (item) {
-                    var grp = item;
-                    var $info = $("<div>").addClass("client-info")
-                        .append($("<p>").text(grp["Full-Name"]));
-                    var grp_allocated = grp.allocated == null ? 0 : (grp.allocated.split(";").length);
-                    var p_class = grp_allocated > grp.capacity ? "within_cap" : (grp_allocated == grp.capacity ? "full_cap" : "exceed_cap");
-                    return $("<tr>").append($("<td>").append(grp["Unique-id"])).append($("<td>").append($info)).append($("<td>").append("<p>").addClass(p_class).text(grp_allocated + " / " + grp.capacity));
-                },
-                fields: [
-                    {
-                        title: "Course code", name: "Unique-id",
-                        sorter: function (id1, id2) {
-                            var idx1 = findIndex(data_groups, "Unique-id", id1);
-                            var idx2 = findIndex(data_groups, "Unique-id", id2);
-                            allocated1 = data_groups[idx1].allocated;
-                            allocated2 = data_groups[idx2].allocated;
-                            capacity1 = data_groups[idx1].capacity;
-                            capacity2 = data_groups[idx2].capacity;
-
-                            var user1_allocated = allocated1 == null ? 0 : allocated1.split(";").length;
-                            var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
-                            return user1_allocated - capacity1 > user2_allocated - capacity2;
-                        }, type: "text"
-                    }, { title: "Course name", name: "Full-Name", type: "text" }, { title: "Requirement" }]
-            });
-        };
-        reader.readAsText(file);
-    };
-
-    $("#detailsDialogPref").dialog({
-        autoOpen: false,
-        width: 400,
-        close: function () {
-            $("#detailsFormPref").validate().resetForm();
-            $("#detailsFormPref").find(".error").removeClass("error");
-        }
-    });
-
-    $("#detailsDialogSlot").dialog({
-        autoOpen: false,
-        width: 400,
-        close: function () {
-            $("#detailsFormSlot").validate().resetForm();
-            $("#detailsFormSlot").find(".error").removeClass("error");
-        }
-    });
-
-    var showIndividual = function (dialogType, client) {
-        $("#namePref").html(client["Full-Name"]);
-        $("#preference div").remove();
-
-        var allotted_slots = client["allocated"] == null ? [] : client["allocated"].split(";");
-        var associated_slots = client.choices == null ? [] : client.choices.split(";");
-        $.each(allotted_slots, function (index, slot) {
-            if ($.inArray(slot, associated_slots) == -1)
-                associated_slots.push(slot);
-        });
-        if (associated_slots != []) {
-            $.each(associated_slots, function (index, slot) {
-                add_check_box("#preference", slot, !($.inArray(slot, allotted_slots) == -1));
-            });
-        }
-
-        formSubmitHandler = function () {
-            allocated = [];
-            $("#preference input").each(function (index, value) {
-                if (value.checked) {
-                    allocated.push(value.id);
-                    group = data_groups.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
-                    if (group == undefined) alert(value.id + "not found");
-                    else {
-                        y = group.allocated == null ? [] : group.allocated.split(";");
-                        if ($.inArray(client["Unique-id"], y) == -1)
-                            y.push(client["Unique-id"]);
-                        group.allocated = y.join(";");
-                        var idx = findIndex(data_groups, "Unique-id", group["Unique-id"]);
-                        data_groups[idx] = group;
-                    }
-                }
-                else {
-                    group = data_groups.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
-                    //check if group found or not
-                    if (group == undefined) alert(value.id + "not found");
-                    else {
-                        y = group.allocated == null ? [] : group.allocated.split(";");
-                        index = y.indexOf(client["Unique-id"]);
-                        if (index > -1) {
-                            y.splice(index, 1);
-                            group.allocated = y.length > 0 ? y.join(";") : null;
-                            var idx = findIndex(data_groups, "Unique-id", group["Unique-id"]);
-                            data_groups[idx] = group;
-                        }
-                    }
-                }
-            });
-            client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
-            var idx = findIndex(data_individuals, "Unique-id", client["Unique-id"]);
-            data_individuals[idx] = client;
-            $("#jsgrid-preference").jsGrid("refresh");
-            $("#jsgrid-slots").jsGrid("refresh");
-            $("#detailsDialogPref").dialog("close");
-            update_count_display();
-        };
-
-        $("#detailsDialogPref").dialog("option", "title", dialogType + " Client")
-            .dialog("open");
-    };
-
-    var showGroup = function (dialogType, client) {
-        $("#nameSlot").html(client["Full-Name"]);
-        $("#slot div").remove();
+                    var client = args.item;
+                    $("#nameSlot").html(client["Full-Name"]);
+                    $("#slot div").remove();
 
         var allotted_slots = client["allocated"] == null ? [] : client["allocated"].split(";");
         var associated_slots = client.choices == null ? [] : client.choices.split(";");
@@ -278,13 +224,13 @@ $(function () {
         if (associated_slots != []) {
             $.each(associated_slots, function (index, slot) {
                 add_check_box("#slot", slot, !($.inArray(slot, allotted_slots) == -1));
-            });
-        }
+                        });
+                    }
 
-        formSubmitHandler = function () {
-            allocated = [];
-            $("#slot input").each(function (index, value) {
-                if (value.checked) {
+                    formSubmitHandlerSlot = function () {
+                        allocated = [];
+                        $("#slot input").each(function (index, value) {
+                            if (value.checked) {
                     allocated.push(value.id);
                     individual = data_individuals.find(obj => { return obj["Unique-id"] == value.id });
                     y = individual.allocated == null ? [] : individual.allocated.split(";");
@@ -313,12 +259,61 @@ $(function () {
             $("#jsgrid-preference").jsGrid("refresh");
             $("#jsgrid-slots").jsGrid("refresh");
             $("#detailsDialogSlot").dialog("close");
-            update_count_display();
-        };
+                        update_count_display();
+                    };
 
-        $("#detailsDialogSlot").dialog("option", "title", dialogType + " Client")
-            .dialog("open");
+                    $("#detailsDialogSlot").dialog("option", "title", "Edit Client")
+                        .dialog("open");
+                },
+                rowRenderer: function (item) {
+                    var grp = item;
+                    var $info = $("<div>").addClass("client-info")
+                        .append($("<p>").text(grp["Full-Name"]));
+                    var grp_allocated = grp.allocated == null ? 0 : (grp.allocated.split(";").length);
+                    var p_class = grp_allocated > grp.capacity ? "within_cap" : (grp_allocated == grp.capacity ? "full_cap" : "exceed_cap");
+                    return $("<tr>").append($("<td>").append(grp["Unique-id"])).append($("<td>").append($info)).append($("<td>").append("<p>").addClass(p_class).text(grp_allocated + " / " + grp.capacity));
+                },
+                fields: [
+                    {
+                        title: "Course code", name: "Unique-id",
+                        sorter: function (id1, id2) {
+                            var idx1 = findIndex(data_groups, "Unique-id", id1);
+                            var idx2 = findIndex(data_groups, "Unique-id", id2);
+                            allocated1 = data_groups[idx1].allocated;
+                            allocated2 = data_groups[idx2].allocated;
+                            capacity1 = data_groups[idx1].capacity;
+                            capacity2 = data_groups[idx2].capacity;
+
+                            var user1_allocated = allocated1 == null ? 0 : allocated1.split(";").length;
+                            var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
+                            if (user1_allocated != user2_allocated)
+                                return user1_allocated - capacity1 > user2_allocated - capacity2;
+                            else
+                                return user1_allocated > user2_allocated;
+                        }, type: "text"
+                    }, { title: "Course name", name: "Full-Name", type: "text" }, { title: "Requirement", name: "allocated", type: "number" }]
+            });
+        };
+        reader.readAsText(file);
     };
+
+    $("#detailsDialogPref").dialog({
+        autoOpen: false,
+        width: 400,
+        close: function () {
+            $("#detailsFormPref").validate().resetForm();
+            $("#detailsFormPref").find(".error").removeClass("error");
+        }
+    });
+
+    $("#detailsDialogSlot").dialog({
+        autoOpen: false,
+        width: 400,
+        close: function () {
+            $("#detailsFormSlot").validate().resetForm();
+            $("#detailsFormSlot").find(".error").removeClass("error");
+        }
+    });
 
     $("#custom_check_pref").change(function () {
         if ($(this).is(":checked") && $("#custom_input_pref").val() != "") {
@@ -338,13 +333,13 @@ $(function () {
 
     $("#detailsFormPref").validate({
         submitHandler: function () {
-            formSubmitHandler();
+            formSubmitHandlerPref();
         }
     });
 
     $("#detailsFormSlot").validate({
         submitHandler: function () {
-            formSubmitHandler();
+            formSubmitHandlerSlot();
         }
     });
 
