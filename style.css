@@ -44,8 +44,13 @@ label.error {
     color: #ff6666;
 }
 
+.jsgrid-preference, .jsgrid-slots {
+    height: 100%;
+    width: 100%;
+}
+
 .jsgrid-grid-body {
-    height: 100% !important;
+    height: 500px;
 }
 
 .jsgrid-row, .jsgrid-alt-row {
