@@ -40,6 +40,21 @@
 <body style="background-color: rgb(142, 231, 167);">
     <div class="container-fluid">
         <div class="row" style="margin-top: 15px;">
+            <div class="offset-md-2 col-md-8" id="instructions">
+                <ul>
+                    <li>This uses two files - One containing preferences of choosers and another containing preferences
+                        of choices</li>
+                    <li>In case you want to reset, you have to reload the page. <b>Please note that this will discard
+                            any allotment you have made.</b>If you want to save changes before resetting, download the
+                        output files.</li>
+                    <li>Use the following column headings strictly (however, the order of these columns is not
+                        important) for both the files:</li>
+                </ul>
+                <div class="offset-md-2 col-md-8"> <b>SrNum,Full-Name,Unique-id,capacity,allocated,choices</b>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 15px;">
             <div class="col" id="individuals_file_input">
                 <div class="form-group" style="width: 50vw;display: inline-block;">
                     <label class="control-label">
@@ -56,24 +71,24 @@
             </div>
         </div>
         <div class="row">
-                <div class="col-md-2 count_stats" style="margin-top:25px;display:none">
-                        <table class="table table-bordered bg-white">
-                            <tbody>
-                                <tr>
-                                    <td>Individuals with full allotment</td>
-                                    <td id="ind_cnt_eq"></td>
-                                </tr>
-                                <tr>
-                                    <td>Individuals with less allotment</td>
-                                    <td id="ind_cnt_less"></td>
-                                </tr>
-                                <tr>
-                                    <td>Individuals with more allotment</td>
-                                    <td id="ind_cnt_exceed"></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="col-md-2 count_stats" style="margin-top:25px;display:none">
+                <table class="table table-bordered bg-white">
+                    <tbody>
+                        <tr>
+                            <td>Individuals with full allotment</td>
+                            <td id="ind_cnt_eq"></td>
+                        </tr>
+                        <tr>
+                            <td>Individuals with less allotment</td>
+                            <td id="ind_cnt_less"></td>
+                        </tr>
+                        <tr>
+                            <td>Individuals with more allotment</td>
+                            <td id="ind_cnt_exceed"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <div class="col-md-4">
                 <div id="jsgrid-preference" style="background-color: #ffffff;max-height:65vh;"></div>
                 <!-- Preference Dialog box -->
@@ -133,35 +148,35 @@
                 </div>
             </div>
             <div class="col-md-2 count_stats" style="margin-top:25px;display:none">
-                    <table class="table table-bordered bg-white">
-                        <tbody>
-                            <tr>
-                                <td>Groups with full allotment</td>
-                                <td id="grp_cnt_eq"></td>
-                            </tr>
-                            <tr>
-                                <td>Groups with less allotment</td>
-                                <td id="grp_cnt_less"></td>
-                            </tr>
-                            <tr>
-                                <td>Groups with more allotment</td>
-                                <td id="grp_cnt_exceed"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-        </div>
-            
-        </div>
-        <div class="row" style="margin-top: 15px;">
-            <div class="col" style="margin-top:25px">
-                <div class="form-group" style="text-align: center;"><label class="control-label">
-                        <h3>Save files</h3>
-                    </label> <button id="saveFiles" class="ui-button ui-widget">Save</button></div>
+                <table class="table table-bordered bg-white">
+                    <tbody>
+                        <tr>
+                            <td>Groups with full allotment</td>
+                            <td id="grp_cnt_eq"></td>
+                        </tr>
+                        <tr>
+                            <td>Groups with less allotment</td>
+                            <td id="grp_cnt_less"></td>
+                        </tr>
+                        <tr>
+                            <td>Groups with more allotment</td>
+                            <td id="grp_cnt_exceed"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- <div class="row" style="margin-top: 15px;">
+    </div>
+    <div class="row" style="margin-top: 15px;">
+        <div class="col" style="margin-top:2.8vh;display:none;" id="save_files">
+            <div class="form-group" style="text-align: center;"><label class="control-label">
+                    <h3>Save files</h3>
+                </label> <button id="saveFiles" class="ui-button ui-widget">Save</button></div>
+        </div>
+    </div>
+
+    <!-- <div class="row" style="margin-top: 15px;">
             <div class="col" style="margin-top:5px">
                 Format of input CSV file : SrNum, Full-Name, Unique-id, capacity, allocated, choices
             </div>
