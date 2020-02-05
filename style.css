@@ -4,7 +4,10 @@
     box-sizing: border-box;
 }
 
-.ui-widget *, .ui-widget input, .ui-widget select, .ui-widget button {
+.ui-widget *,
+.ui-widget input,
+.ui-widget select,
+.ui-widget button {
     font-family: 'Helvetica Neue Light', 'Open Sans', Helvetica;
     font-size: 16px;
 }
@@ -14,7 +17,8 @@
     overflow: scroll!important;
 }
 
-.form-group input, .form-group select {
+.form-group input,
+.form-group select {
     width: 175px;
     float: right;
 }
@@ -37,7 +41,8 @@
     margin: 0 auto;
 }
 
-input.error, select.error {
+input.error,
+select.error {
     border: 1px solid #ff9999;
     background: #ffeeee;
 }
@@ -49,7 +54,8 @@ label.error {
     color: #ff6666;
 }
 
-.jsgrid-preference, .jsgrid-slots {
+.jsgrid-preference,
+.jsgrid-slots {
     height: 100%;
     width: 100%;
 }
@@ -58,7 +64,8 @@ label.error {
     height: 500px;
 }
 
-.jsgrid-row, .jsgrid-alt-row {
+.jsgrid-row,
+.jsgrid-alt-row {
     cursor: pointer;
 }
 
@@ -66,7 +73,8 @@ label.error {
     text-align: center;
 }
 
-#individuals_file_input, #groups_file_input {
+#individuals_file_input,
+#groups_file_input {
     display: inline-block;
     width: 50
 }
@@ -76,7 +84,8 @@ html {
     overflow: hidden;
 }
 
-body, form {
+body,
+form {
     height: 100%;
     padding: 10px;
     color: #262626;
@@ -100,7 +109,7 @@ h2 {
 }
 
 ul {
-    list-style: none;
+    list-style: circle;
 }
 
 a {
@@ -113,7 +122,9 @@ a:hover {
     color: #258faf;
 }
 
-input, button, select {
+input,
+button,
+select {
     font-family: 'Helvetica Neue Light', 'Open Sans', Helvetica;
     font-weight: 300;
     font-size: 16px;
@@ -174,7 +185,8 @@ iframe[name='demo'] {
     color: blue;
 }
 
-#custom_input_pref,#custom_input_slot {
+#custom_input_pref,
+#custom_input_slot {
     width: 150px;
     float: left;
 }
@@ -183,6 +195,11 @@ input[type=checkbox] {
     margin-top: 6px;
 }
 
-#custom_pref,#custom_slot {
+#custom_pref,
+#custom_slot {
     margin-top: 20px;
+}
+
+#instructions {
+    text-align: left;
 }
