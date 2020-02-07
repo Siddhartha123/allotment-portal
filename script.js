@@ -149,13 +149,16 @@ $(function () {
                         data_individuals[idx] = client;
                         $("#jsgrid-preference").jsGrid("refresh");
                         $("#jsgrid-slots").jsGrid("refresh");
-                        $("#jsgrid-slots").jsGrid("rowClick", lastItemSlot);
+                        //check if other dialog was open or not
+                        if (lastItemSlot != null)
+                            $("#jsgrid-slots").jsGrid("rowClick", lastItemSlot);
+                        lastItemPref = null;
                         $("#detailsDialogPref").dialog("close");
                         update_count_display();
 
                     };
 
-                    $("#detailsDialogPref").dialog("option", "title", "Edit Client")
+                    $("#detailsDialogPref").dialog("option", "title", "Edit preferences")
                         .dialog("open");
                 },
                 rowRenderer: function (item) {
@@ -273,13 +276,16 @@ $(function () {
                         var idx = findIndex(data_groups, "Unique-id", client["Unique-id"]);
                         data_groups[idx] = client;
                         $("#jsgrid-preference").jsGrid("refresh");
-                        $("#jsgrid-preference").jsGrid("rowClick", lastItemPref);
+                        //check if other dialog was open or not
+                        if (lastItemPref != null)
+                            $("#jsgrid-preference").jsGrid("rowClick", lastItemPref);
                         $("#jsgrid-slots").jsGrid("refresh");
+                        lastItemSlot = null;
                         $("#detailsDialogSlot").dialog("close");
                         update_count_display();
                     };
 
-                    $("#detailsDialogSlot").dialog("option", "title", "Edit Client")
+                    $("#detailsDialogSlot").dialog("option", "title", "Edit slots")
                         .dialog("open");
                 },
                 rowRenderer: function (item) {
