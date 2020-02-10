@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>slot-preference-matching</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="demos.css" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,600,400' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="./jsgrid/css/jsgrid.css" />
+    <link rel="stylesheet" type="text/css" href="./jsgrid/css/theme.css" />
+
+    <link rel="stylesheet" href="./assets/custom-theme/jquery-ui-1.10.0.custom.css">
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="./assets/js/jquery-ui-1.9.2.custom.min.js"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js"></script>
+
+    <!-- scripts for jsgrid  -->
+    <script src="./jsgrid/src/jsgrid.core.js"></script>
+    <script src="./jsgrid/src/jsgrid.load-indicator.js"></script>
+    <script src="./jsgrid/src/jsgrid.load-strategies.js"></script>
+    <script src="./jsgrid/src/jsgrid.sort-strategies.js"></script>
+    <script src="./jsgrid/src/jsgrid.field.js"></script>
+
+    <script src="./jsgrid/src/fields/jsgrid.field.text.js"></script>
+    <script src="./jsgrid/src/fields/jsgrid.field.number.js"></script>
+    <script src="./jsgrid/src/fields/jsgrid.field.select.js"></script>
+    <script src="./jsgrid/src/fields/jsgrid.field.checkbox.js"></script>
+    <script src="./jsgrid/src/fields/jsgrid.field.control.js"></script>
+
+    <!-- script for csv importing -->
+    <script src="./assets/js/ucsv-1.2.0.min.js"></script>
+
+    <!-- this script is everything ! -->
+    <script src="./merge.js"></script>
+    <style>
+        .ui-widget *,
+        .ui-widget input,
+        .ui-widget select,
+        .ui-widget button {
+            font-family: 'Helvetica Neue Light', 'Open Sans', Helvetica;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 175px;
+            float: right;
+        }
+
+        .form-group {
+            margin: 30px 0;
+        }
+
+        .form-group:first-child {
+            margin-top: 10px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 10px;
+        }
+
+        .form-group button {
+            display: block;
+            width: 100px;
+            margin: 0 auto;
+        }
+
+        input.error,
+        select.error {
+            border: 1px solid #ff9999;
+            background: #ffeeee;
+        }
+
+        label.error {
+            float: right;
+            margin-left: 100px;
+            font-size: .8em;
+            color: #ff6666;
+        }
+
+        .jsgrid-grid-body {
+            height: 100% !important;
+        }
+
+        .jsgrid-row,
+        .jsgrid-alt-row {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body style="background-color: rgb(75, 191, 107);">
+    <div class="container" style="margin: 25 px;">
+        <div class="row" style="margin-top: 15 px;">
+            <div class="col" id="students" >
+                <div class="form-group"><label class="control-label">
+                        <h3>Students </h3>
+                    </label> <input id="file-preferences" type="file"></div>
+            </div>
+            <div class="col" id="courses"  style="display: none">
+                <div class="form-group"><label class="control-label">
+                        <h3>Courses </h3>
+                    </label><input id="file-slots" type="file"></div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 15 px;">
+            <div class="col-md-6">
+                <div id="jsgrid-preference" style="background-color: #ffffff;"></div>
+                <!-- Preference Dialog box -->
+                <div id="detailsDialogPref">
+                    <form id="detailsFormPref">
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <p id="namePref"></p>
+                        </div>
+                        <!-- <div class="form-group">
+                            <label for="preference">Preferences</label>
+                            <select id="preference" name="preference">
+                                <option value="">(Select)</option>
+                            </select>
+                        </div> -->
+                        <div id="preference">
+                            <p><strong>Preferences :</strong></p>
+                            <div class="form-group">
+                                <label for="choice1" value="choice1"></label>
+                                <input id="choice1" name="choice1" type="checkbox" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button class="ui-button ui-widget ui-corner-all ui-button-text-only" type="submit" id="save">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col">
+                <div id="jsgrid-slots" style="background-color: #ffffff;"></div>
+                <!-- Slots Dialog box -->
+                <div id="detailsDialogSlot">
+                    <form id="detailsFormSlot">
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <p id="nameSlot"></p>
+                        </div>
+                        <div id="slot">
+                            <p><strong>Individuals who preferred this :</strong></p>
+                            <div class="form-group">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button class="ui-button ui-widget" type="submit" id="save">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 15 px;">
+            <div class="col" style="margin-top:25px">
+                <div class="form-group" style="text-align: center;"><label class="control-label">
+                        <h3>Save course file</h3>
+                    </label> <button id="saveFiles" class="ui-button ui-widget">Save</button></div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- <script src="assets/js/jquery.min.js"></script> -->
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>
