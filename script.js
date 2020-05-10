@@ -9,6 +9,7 @@ $(function() {
     var lastItemPref, lastItemSlot;
     var t = true,
         f = false;
+    var first_target_name, second_target_name;
 
     function findIndex(data, where, what) {
         result = -1;
@@ -65,6 +66,8 @@ $(function() {
     }
     document.getElementById('file-preferences').onchange = function() {
         var file = this.files[0];
+        var subnames = file.name.split(".");
+        first_target_name = subnames[0] + "." + (subnames.length == 2 ? "1" : (parseInt(subnames[1]) + 1).toString(10)) + ".csv";
         var reader = new FileReader();
         reader.onload = function(progressEvent) {
             var lines = this.result.split('\n');
@@ -201,6 +204,8 @@ $(function() {
     };
     document.getElementById('file-slots').onchange = function() {
         var file = this.files[0];
+        var subnames = file.name.split(".");
+        second_target_name = subnames[0] + "." + (subnames.length == 2 ? "1" : (parseInt(subnames[1]) + 1).toString(10)) + ".csv";
         var reader = new FileReader();
         reader.onload = function(progressEvent) {
             var lines = this.result.split('\n');
@@ -358,11 +363,11 @@ $(function() {
             var data = CSV.objectToCsv(d_indvs, { columns: headings1 });
             var blob = new Blob([data], { type: 'text/csv' });
             if (window.navigator.msSaveOrOpenBlob)
-                window.navigator.msSaveBlob(blob, 'individuals.csv');
+                window.navigator.msSaveBlob(blob, first_target_name);
             else {
                 var elem = window.document.createElement('a');
                 elem.href = window.URL.createObjectURL(blob);
-                elem.download = 'individuals.csv';
+                elem.download = first_target_name;
                 document.body.appendChild(elem);
                 elem.click();
                 window.URL.revokeObjectURL(elem.href);
@@ -371,11 +376,11 @@ $(function() {
             data = CSV.objectToCsv(d_grps, { columns: headings2 });
             blob = new Blob([data], { type: 'text/csv' });
             if (window.navigator.msSaveOrOpenBlob)
-                window.navigator.msSaveBlob(blob, 'groups.csv');
+                window.navigator.msSaveBlob(blob, second_target_name);
             else {
                 var elem = window.document.createElement('a');
                 elem.href = window.URL.createObjectURL(blob);
-                elem.download = 'groups.csv';
+                elem.download = second_target_name;
                 document.body.appendChild(elem);
                 elem.click();
                 window.URL.revokeObjectURL(elem.href);
