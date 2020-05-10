@@ -1,231 +1,356 @@
 $(function () {
-    var data_individuals = [];
-    var data_groups = [];
-    var headings = [];
-    var uploaded_individuals = false;
-    var uploaded_groups = false;
-    var associated_individuals_groups = [];
+    var d_indvs = [];
+    var d_grps = [];
+    var headings = ["SrNum", "Full-Name", "Unique-id", "capacity", "allocated", "choices"];
+    var headings1, headings2;
+    var uploaded_individuals = f;
+    var uploaded_groups = f;
+    var formHandlerPref, formHandlerSlot = $.noop;
+    var lastItemPref, lastItemSlot;
+    var t=true,f=false;
+    function findIndex(data, where, what) {
+        result = -1;
+        data.some(function (item, i) {
+            if (item[where] === what) {
+                result = i;
+                return t;
+            }
+        });
+        return result;
+    }
+    function add_check_box(id, for_element, checked) {
+        $(id).append($("<div class=form-group>").append($('<label>', {
+            for: for_element
+        }).text(for_element)).append($('<input>', {
+            type: 'checkbox',
+            id: for_element,
+            name: for_element
+        }).prop("checked", checked)));
+    }
+    function update_count() {
+        //update count of individuals and groups
+        var ind_cnt_exceed = 0,
+            ind_cnt_less = 0,
+            ind_cnt_eq = 0;
+        var grp_cnt_exceed = 0,
+            grp_cnt_less = 0,
+            grp_cnt_eq = 0;
+        $.each(d_indvs, function (index, ind) {
+            allocated = ind.allocated == null ? 0 : ind.allocated.split(";").length;
+            if (allocated == ind.capacity) ind_cnt_eq++;
+            else if (allocated > ind.capacity) ind_cnt_exceed++;
+            else ind_cnt_less++;
+        });
+        $.each(d_grps, function (index, grp) {
+            allocated = grp.allocated == null ? 0 : grp.allocated.split(";").length;
+            if (allocated == grp.capacity) grp_cnt_eq++;
+            else if (allocated > grp.capacity) grp_cnt_exceed++;
+            else grp_cnt_less++;
+        });
+        return { "individuals": { "equal": ind_cnt_eq, "exceed": ind_cnt_exceed, "less": ind_cnt_less }, "groups": { "equal": grp_cnt_eq, "exceed": grp_cnt_exceed, "less": grp_cnt_less } };
+    }
+    function update_count_display() {
+        count = update_count();
+        $("#ind_cnt_exceed").html(count.individuals.exceed);
+        $("#ind_cnt_less").html(count.individuals.less);
+        $("#ind_cnt_eq").html(count.individuals.equal);
+        $("#grp_cnt_exceed").html(count.groups.exceed);
+        $("#grp_cnt_less").html(count.groups.less);
+        $("#grp_cnt_eq").html(count.groups.equal);
+    }
     document.getElementById('file-preferences').onchange = function () {
         var file = this.files[0];
         var reader = new FileReader();
         reader.onload = function (progressEvent) {
             var lines = this.result.split('\n');
-            headings = lines[0].split(",");
+            headings1 = (lines[0]).split(",");
             for (var line = 1; line < lines.length; line++) {
                 if (lines[line] != "") {
-                    var obj = CSV.csvToObject(lines[line], { columns: headings });
-                    data_individuals.push(obj[0]);
+                    var obj = CSV.csvToObject(lines[line], { columns: headings1 });
+                    d_indvs.push(obj[0]);
                 }
             }
-            document.getElementById("file-preferences").style.display = "none";
-            document.getElementById("file-slots").style.display = "block";
-            uploaded_individuals = true;
+            document.getElementById("individuals_file_input").style.display = "none";
+            document.getElementById("groups_file_input").style.display = "block";
+            document.getElementById("instructions").style.display = "none";
+            uploaded_individuals = t;
             $("#jsgrid-preference").jsGrid({
                 height: "100%",
                 width: "100%",
-                autoload: true,
-                paging: false,
+                autoload: t,
+                paging: f,
+                sorting: t,
+                filtering: t,
                 controller: {
-                    loadData: function () {
-                        return data_individuals;
+                    loadData: function (filter) {
+                        return $.grep(d_indvs, function (individual) {
+                            var allocated = individual["allocated"] == null ? 0 : individual["allocated"].split(";").length;
+                            return (!filter["Full-Name"] || individual["Full-Name"].indexOf(filter["Full-Name"]) > -1) &&
+                                (!("" + filter["Unique-id"]) || ("" + individual["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1) && ((filter["allocated"] == null) || allocated == filter["allocated"]);
+                        });
                     }
                 },
                 rowClick: function (args) {
-                    showIndividual("Edit", args.item);
+                    lastItemPref = args;
+                    var client = args.item;
+                    $("#namePref").html(client["Full-Name"]);
+                    $("#preference div").remove();
+                    var allotted_slots = client["allocated"] == null ? [] : client["allocated"].split(";");
+                    var associated_slots = client.choices == null ? [] : client.choices.split(";");
+                    $.each(allotted_slots, function (index, slot) {
+                        if ($.inArray(slot, associated_slots) == -1)
+                            associated_slots.push(slot);
+                    });
+                    if (associated_slots != []) {
+                        $.each(associated_slots, function (index, slot) {
+                            add_check_box("#preference", slot, !($.inArray(slot, allotted_slots) == -1));
+                        });
+                    }
+                    formHandlerPref = function () {
+                        allocated = [];
+                        $("#preference input").each(function (index, value) {
+                            if (value.checked) {
+                                allocated.push(value.id);
+                                group = d_grps.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
+                                if (group == undefined) alert(value.id + "not found");
+                                else {
+                                    y = group.allocated == null ? [] : group.allocated.split(";");
+                                    if ($.inArray(client["Unique-id"], y) == -1)
+                                        y.push(client["Unique-id"]);
+                                    group.allocated = y.join(";");
+                                    var idx = findIndex(d_grps, "Unique-id", group["Unique-id"]);
+                                    d_grps[idx] = group;
+                                }
+                            } else {
+                                group = d_grps.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
+                                //check if group found or not
+                                if (group == undefined) alert(value.id + "not found");
+                                else {
+                                    y = group.allocated == null ? [] : group.allocated.split(";");
+                                    index = y.indexOf(client["Unique-id"]);
+                                    if (index > -1) {
+                                        y.splice(index, 1);
+                                        group.allocated = y.length > 0 ? y.join(";") : null;
+                                        var idx = findIndex(d_grps, "Unique-id", group["Unique-id"]);
+                                        d_grps[idx] = group;
+                                    }
+                                }
+                            }
+                        });
+                        client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
+                        var idx = findIndex(d_indvs, "Unique-id", client["Unique-id"]);
+                        d_indvs[idx] = client;
+                        $("#jsgrid-preference").jsGrid("refresh");
+                        //check if other dialog was open or not
+                        if (lastItemSlot != null)
+                            $("#jsgrid-slots").jsGrid("rowClick", lastItemSlot);
+                        $("#jsgrid-slots").jsGrid("refresh");
+                        lastItemPref = null;
+                        $("#detailsDialogPref").modal("hide");
+                        update_count_display();
+                    };
+                    $("#detailsDialogPref").modal({
+                        backdrop: f,
+                        show: t
+                    });
+                    $('#detailsDialogPref > .modal-dialog').css({
+                        top: 0,
+                        left: 0
+                    });
+                    $('.modal-dialog').draggable({
+                        handle: ".modal-header"
+                    });
                 },
                 rowRenderer: function (item) {
                     var user = item;
                     var $info = $("<div>").addClass("client-info")
-                        .append($("<p>").append($("<strong>").text(user["Full-Name"])));
+                        .append($("<p>").text(user["Full-Name"]));
+                    var user_allocated = user["allocated"] == null ? 0 : user["allocated"].split(";").length;
+                    var p_class = user_allocated > user.capacity ? "exceed_cap" : (user_allocated == user.capacity ? "full_cap" : "within_cap");
                     var $data = $("<div>").addClass("client-info")
-                        .append($("<p>").append($("<strong>").text((user["allocated"] == null ? 0 : user["allocated"].split(";").length) + " / " + user.capacity)));
-                    return $("<tr>").append($("<td>").append($info)).append($("<td>").append($data));
+                        .append($("<p>").addClass(p_class).text(user_allocated + " / " + user.capacity));
+                    return $("<tr>").append($("<td>").append(user["Unique-id"])).append($("<td>").append($info)).append($("<td>").append($data));
                 },
-                fields: [
-                    { title: "Candidates" }, { title: "slots alloted" }]
+                fields: [{
+                    title: "ID",
+                    name: "Unique-id",
+                    sorter: function (id1, id2) {
+                        var idx1 = findIndex(d_indvs, "Unique-id", id1);
+                        var idx2 = findIndex(d_indvs, "Unique-id", id2);
+                        allocated1 = d_indvs[idx1].allocated;
+                        allocated2 = d_indvs[idx2].allocated;
+                        capacity1 = d_indvs[idx1].capacity;
+                        capacity2 = d_indvs[idx2].capacity;
+                        var user1_allocated = allocated1 == null ? 0 : allocated1.split(";").length;
+                        var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
+                        if (user1_allocated != user2_allocated)
+                            return user1_allocated - capacity1 > user2_allocated - capacity2;
+                        else
+                            return user1_allocated > user2_allocated;
+                    },
+                    type: "text"
+                }, { title: "Candidates", name: "Full-Name", type: "text" }, { title: "slots alloted", name: "allocated", type: "number" }]
             });
         };
         reader.readAsText(file);
     };
-
     document.getElementById('file-slots').onchange = function () {
         var file = this.files[0];
         var reader = new FileReader();
         reader.onload = function (progressEvent) {
             var lines = this.result.split('\n');
-            var headings = lines[0].split(",");
+            headings2 = (lines[0]).split(",");;
             for (var line = 1; line < lines.length; line++) {
                 if (lines[line] != "") {
-                    var obj = CSV.csvToObject(lines[line], { columns: headings });
-                    data_groups.push(obj[0]);
+                    var obj = CSV.csvToObject(lines[line], { columns: headings2 });
+                    d_grps.push(obj[0]);
                 }
             }
-            document.getElementById("file-slots").style.display = "none";
-            uploaded_groups = true;
-
-            $.each(data_groups, function (index, group) {
-                associated_individuals = [];
-                $.each(data_individuals, function (index, individual) {
-                    pos = $.inArray(group["Unique-id"], individual.choices.split(";"));
-                    if (pos != -1) {
-                        x = new Object();
-                        x.pos = pos + 1;
-                        x.id = individual["Unique-id"];
-                        x.name = individual["Full-Name"];
-                        associated_individuals.push(x);
-                    }
-                });
-                associated_individuals.sort(function (a, b) {
-                    return a.pos - b.pos;
-                });
-                individuals = associated_individuals.map(a => a.id);
-                (data_groups[group["SrNum"] - 1]).choices = individuals.join(";");
-                associated_individuals_groups[group["Unique-id"]] = associated_individuals;
-            });
+            document.getElementById("groups_file_input").style.display = "none";
+            document.getElementById("save_files").style.display = "block";
+            $(".count_stats").css("display", "flex");
+            update_count_display();
+            uploaded_groups = t;
             $("#jsgrid-slots").jsGrid({
                 height: "100%",
                 width: "100%",
-                autoload: true,
-                paging: false,
+                autoload: t,
+                paging: f,
+                sorting: t,
+                filtering: t,
                 controller: {
-                    loadData: function () {
-                        return data_groups;
+                    loadData: function (filter) {
+                        return $.grep(d_grps, function (group) {
+                            var allocated = group["allocated"] == null ? 0 : group["allocated"].split(";").length;
+                            return (!filter["Full-Name"] || group["Full-Name"].indexOf(filter["Full-Name"]) > -1) &&
+                                (!("" + filter["Unique-id"]) || ("" + group["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1) && (filter["allocated"] == null || filter["allocated"] == allocated);
+                        });
                     }
                 },
                 rowClick: function (args) {
-                    showGroup("Edit", args.item);
+                    lastItemSlot = args;
+                    var client = args.item;
+                    $("#nameSlot").html(client["Full-Name"]);
+                    $("#slot div").remove();
+                    var allotted_slots = client["allocated"] == null ? [] : client["allocated"].split(";");
+                    var associated_slots = client.choices == null ? [] : client.choices.split(";");
+                    $.each(allotted_slots, function (index, slot) {
+                        if ($.inArray(slot, associated_slots) == -1)
+                            associated_slots.push(slot);
+                    });
+                    if (associated_slots != []) {
+                        $.each(associated_slots, function (index, slot) {
+                            add_check_box("#slot", slot, !($.inArray(slot, allotted_slots) == -1));
+                        });
+                    }
+                    formHandlerSlot = function () {
+                        allocated = [];
+                        $("#slot input").each(function (index, value) {
+                            if (value.checked) {
+                                allocated.push(value.id);
+                                individual = d_indvs.find(obj => { return obj["Unique-id"] == value.id });
+                                y = individual.allocated == null ? [] : individual.allocated.split(";");
+                                if ($.inArray(client["Unique-id"], y) == -1)
+                                    y.push(client["Unique-id"]);
+                                individual.allocated = y.join(";");
+                                var idx = findIndex(d_indvs, "SrNum", individual["SrNum"]);
+                                d_indvs[idx] = individual;
+                            } else {
+                                individual = d_indvs.find(obj => { return obj["Unique-id"] == value.id });
+                                //check if individual found or not
+                                y = individual.allocated == null ? [] : individual.allocated.split(";");
+                                index = y.indexOf(client["Unique-id"]);
+                                if (index > -1) {
+                                    y.splice(index, 1);
+                                    individual.allocated = y.length > 0 ? y.join(";") : null;
+                                    var idx = findIndex(d_indvs, "SrNum", individual["SrNum"]);
+                                    d_indvs[idx] = individual;
+                                }
+                            }
+                        });
+                        client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
+                        var idx = findIndex(d_grps, "Unique-id", client["Unique-id"]);
+                        d_grps[idx] = client;
+                        $("#jsgrid-slots").jsGrid("refresh");
+                        //check if other dialog was open or not
+                        if (lastItemPref != null)
+                            $("#jsgrid-preference").jsGrid("rowClick", lastItemPref);
+                        $("#jsgrid-preference").jsGrid("refresh");
+                        lastItemSlot = null;
+                        $("#detailsDialogSlot").modal("hide");
+                        update_count_display();
+                    };
+                    $("#detailsDialogSlot").modal({
+                        backdrop: f,
+                        show: t
+                    });
+                    $('#detailsDialogSlot > .modal-dialog').css({
+                        top: 0,
+                        right: 0
+                    });
+                    $('.modal-dialog').draggable({
+                        handle: ".modal-header"
+                    });
                 },
                 rowRenderer: function (item) {
                     var grp = item;
                     var $info = $("<div>").addClass("client-info")
-                        .append($("<p>").append($("<strong>").text(grp["Full-Name"])));
-
-                    return $("<tr>").append($("<td>").append(grp["Unique-id"])).append($("<td>").append($info)).append($("<td>").append((grp.allocated == null ? 0 : (grp.allocated.split(";").length)) + " / " + grp.capacity));
+                        .append($("<p>").text(grp["Full-Name"]));
+                    var grp_allocated = grp.allocated == null ? 0 : (grp.allocated.split(";").length);
+                    var p_class = grp_allocated > grp.capacity ? "within_cap" : (grp_allocated == grp.capacity ? "full_cap" : "exceed_cap");
+                    return $("<tr>").append($("<td>").append(grp["Unique-id"])).append($("<td>").append($info)).append($("<td>").append("<p>").addClass(p_class).text(grp_allocated + " / " + grp.capacity));
                 },
-                fields: [
-                    { title: "Course code" }, { title: "Course name" }, { title: "Requirement" }]
+                fields: [{
+                    title: "Course code",
+                    name: "Unique-id",
+                    sorter: function (id1, id2) {
+                        var idx1 = findIndex(d_grps, "Unique-id", id1);
+                        var idx2 = findIndex(d_grps, "Unique-id", id2);
+                        allocated1 = d_grps[idx1].allocated;
+                        allocated2 = d_grps[idx2].allocated;
+                        capacity1 = d_grps[idx1].capacity;
+                        capacity2 = d_grps[idx2].capacity;
+                        var user1_allocated = allocated1 == null ? 0 : allocated1.split(";").length;
+                        var user2_allocated = allocated2 == null ? 0 : allocated2.split(";").length;
+                        if (user1_allocated != user2_allocated)
+                            return user1_allocated - capacity1 > user2_allocated - capacity2;
+                        else
+                            return user1_allocated > user2_allocated;
+                    },
+                    type: "text"
+                }, { title: "Course name", name: "Full-Name", type: "text" }, { title: "Requirement", name: "allocated", type: "number" }]
             });
         };
         reader.readAsText(file);
     };
-
-    $("#detailsDialogPref").dialog({
-        autoOpen: false,
-        width: 400,
-        close: function () {
-            $("#detailsFormPref").validate().resetForm();
-            $("#detailsFormPref").find(".error").removeClass("error");
+    $("#custom_check_pref").change(function () {
+        if ($(this).is(":checked") && $("#custom_input_pref").val() != "") {
+            add_check_box("#preference", $("#custom_input_pref").val(), t);
+            $(this).prop("checked", f);
+            $("#custom_input_pref").val('');
         }
     });
-    $("#detailsDialogSlot").dialog({
-        autoOpen: false,
-        width: 400,
-        close: function () {
-            $("#detailsFormSlot").validate().resetForm();
-            $("#detailsFormSlot").find(".error").removeClass("error");
+    $("#custom_check_slot").change(function () {
+        if ($(this).is(":checked") && $("#custom_input_slot").val() != "") {
+            add_check_box("#slot", $("#custom_input_slot").val(), t);
+            $(this).prop("checked", f);
+            $("#custom_input_slot").val('');
         }
     });
-
-    var showIndividual = function (dialogType, client) {
-        $("#namePref").html(client["Full-Name"]);
-        $("#preference div").remove();
-
-        var allotted_slots = client["allocated"] == null ? [] : client["allocated"].split(";");
-        var associated_slots = client.choices == null ? [] : client.choices.split(";");
-        $.each(allotted_slots, function (index, slot) {
-            if ($.inArray(slot, associated_slots) == -1)
-                associated_slots.push(slot);
-        });
-        if (associated_slots != []) {
-            $.each(associated_slots, function (index, slot) {
-                $("#preference").append($("<div class=form-group>").append($('<label>', {
-                    for: slot
-                }).text(slot)).append($('<input>', {
-                    type: 'checkbox',
-                    id: slot,
-                    name: slot
-                }).prop("checked", !($.inArray(slot, allotted_slots) == -1))));
-            });
-        }
-
-        formSubmitHandlerPref = function () {
-            var allocated = [];
-            $("#preference input").each(function (index, value) {
-                if (value.checked) {
-                    allocated.push(value.id);
-                    group = data_groups.find(obj => { return obj["Unique-id"] == value.id });
-                    y = group.allocated == null ? [] : group.allocated.split(";");
-                    y.push(client["Unique-id"]);
-                    group.allocated = y.join(";");
-                    data_groups[group["SrNum"] - 1] = group;
-                }
-                else {
-                    group = data_groups.find(obj => { return obj["Unique-id"] == value.id });
-                    y = group.allocated == null ? [] : group.allocated.split(";");
-                    index = y.indexOf(client["Unique-id"]);
-                    if (index > -1) {
-                        y.splice(index, 1);
-                        group.allocated = y.length > 0 ? y.join(";") : null;
-                        data_groups[group["SrNum"] - 1] = group;
-                    }
-                }
-            });
-            client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
-            data_individuals[client.SrNum - 1] = client;
-            $("#jsgrid-preference").jsGrid("refresh");
-            $("#jsgrid-slots").jsGrid("refresh");
-
-            $("#detailsDialogPref").dialog("close");
-        };
-
-        $("#detailsDialogPref").dialog("option", "title", dialogType + " Client")
-            .dialog("open");
-    };
-
-    var showGroup = function (dialogType, client) {
-        $("#nameSlot").html(client["Full-Name"]);
-        $("#slot div").remove();
-
-
-        if (associated_individuals_groups[client["Unique-id"]] != []) {
-            $.each(associated_individuals_groups[client["Unique-id"]], function (index, individual) {
-                $("#slot").append($("<div class=form-group>").append($('<label>', {
-                    for: individual.id
-                }).text(individual.name)).append($('<input>', {
-                    type: 'checkbox',
-                    id: individual.id,
-                    name: individual.id
-                }).prop("checked", false)));
-            });
-        }
-
-        formSubmitHandlerSlot = function () {
-            /* Update data_individuals also */
-
-        };
-
-        $("#detailsDialogSlot").dialog("option", "title", dialogType + " Client")
-            .dialog("open");
-    };
-
     $("#detailsFormPref").validate({
         submitHandler: function () {
-            formSubmitHandlerPref();
+            formHandlerPref();
         }
     });
-
     $("#detailsFormSlot").validate({
         submitHandler: function () {
-            formSubmitHandlerSlot();
+            formHandlerSlot();
         }
     });
-    var formSubmitHandlerPref = $.noop;
-    var formSubmitHandlerSlot = $.noop;
-
     $("#saveFiles").click(function () {
-        if (!uploaded_individuals) alert("Load both files first !");
+        if (!uploaded_individuals || !uploaded_groups) alert("Load both files first !");
         else {
-            var data = CSV.objectToCsv(data_individuals, { columns: headings });
+            var data = CSV.objectToCsv(d_indvs, { columns: headings1 });
             var blob = new Blob([data], { type: 'text/csv' });
             if (window.navigator.msSaveOrOpenBlob)
                 window.navigator.msSaveBlob(blob, 'individuals.csv');
@@ -238,8 +363,7 @@ $(function () {
                 window.URL.revokeObjectURL(elem.href);
                 document.body.removeChild(elem);
             }
-
-            data = CSV.objectToCsv(data_groups, { columns: headings });
+            data = CSV.objectToCsv(d_grps, { columns: headings2 });
             blob = new Blob([data], { type: 'text/csv' });
             if (window.navigator.msSaveOrOpenBlob)
                 window.navigator.msSaveBlob(blob, 'groups.csv');

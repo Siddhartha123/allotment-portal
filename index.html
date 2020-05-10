@@ -1,172 +1,201 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>slot-preference-matching</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="demos.css" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,600,400' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="./jsgrid/css/jsgrid.css" />
-    <link rel="stylesheet" type="text/css" href="./jsgrid/css/theme.css" />
-
-    <link rel="stylesheet" href="./assets/custom-theme/jquery-ui-1.10.0.custom.css">
-    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
-    <script src="./assets/js/jquery-ui-1.9.2.custom.min.js"></script>
-    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js"></script>
-
+    <link rel="stylesheet" type="text/css" href="./jsgrid/dist/jsgrid.min.css" />
+    <link rel="stylesheet" type="text/css" href="./jsgrid/dist/jsgrid-theme.min.css" />
+    <link rel="stylesheet" href="./assets/custom-theme/jquery-ui.min.css">
+    <script src="assets/js/jquery-1.10.2.min.js"></script>
+    <script src="assets/js/jquery.validate.min.js"></script>
+    <script src="assets/js/jquery-ui.min.js"></script>
     <!-- scripts for jsgrid  -->
-    <script src="./jsgrid/src/jsgrid.core.js"></script>
-    <script src="./jsgrid/src/jsgrid.load-indicator.js"></script>
-    <script src="./jsgrid/src/jsgrid.load-strategies.js"></script>
-    <script src="./jsgrid/src/jsgrid.sort-strategies.js"></script>
-    <script src="./jsgrid/src/jsgrid.field.js"></script>
+    <script src="./jsgrid/dist/jsgrid.min.js"></script>
 
-    <script src="./jsgrid/src/fields/jsgrid.field.text.js"></script>
-    <script src="./jsgrid/src/fields/jsgrid.field.number.js"></script>
-    <script src="./jsgrid/src/fields/jsgrid.field.select.js"></script>
-    <script src="./jsgrid/src/fields/jsgrid.field.checkbox.js"></script>
-    <script src="./jsgrid/src/fields/jsgrid.field.control.js"></script>
 
     <!-- script for csv importing -->
     <script src="./assets/js/ucsv-1.2.0.min.js"></script>
-
     <!-- this script is everything ! -->
-    <script src="./script.js"></script>
-    <style>
-        .ui-widget *,
-        .ui-widget input,
-        .ui-widget select,
-        .ui-widget button {
-            font-family: 'Helvetica Neue Light', 'Open Sans', Helvetica;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 175px;
-            float: right;
-        }
-
-        .form-group {
-            margin: 30px 0;
-        }
-
-        .form-group:first-child {
-            margin-top: 10px;
-        }
-
-        .form-group:last-child {
-            margin-bottom: 10px;
-        }
-
-        .form-group button {
-            display: block;
-            width: 100px;
-            margin: 0 auto;
-        }
-
-        input.error,
-        select.error {
-            border: 1px solid #ff9999;
-            background: #ffeeee;
-        }
-
-        label.error {
-            float: right;
-            margin-left: 100px;
-            font-size: .8em;
-            color: #ff6666;
-        }
-
-        .jsgrid-grid-body {
-            height: 100% !important;
-        }
-
-        .jsgrid-row,
-        .jsgrid-alt-row {
-            cursor: pointer;
-        }
-    </style>
+    <script src="./script.min.js"></script>
 </head>
-
-<body style="background-color: rgb(75, 191, 107);">
-    <div class="container" style="margin: 25 px;">
-        <div class="row" style="margin-top: 15 px;">
-            <div class="col">
-                <div class="form-group"><label class="control-label">
-                        <h3>Individuals </h3>
+<body style="background-color: rgb(142, 231, 167);">
+    <div class="container-fluid">
+        <div class="row" style="margin-top: 15px;">
+            <div class="offset-md-2 col-md-8" id="instructions">
+                <ul>
+                    <li>This uses two files - One containing preferences of choosers and another containing preferences
+                        of choices</li>
+                    <li>In case you want to reset, you have to reload the page. <b>Please note that this will discard
+                            any allotment you have made.</b>If you want to save changes before resetting, download the
+                        output files.</li>
+                    <li>Use the following column headings strictly (however, the order of these columns is not
+                        important) for both the files:</li>
+                </ul>
+                <div class="offset-md-2 col-md-8"> <b>SrNum,Full-Name,Unique-id,capacity,allocated,choices</b>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 15px;">
+            <div class="col" id="individuals_file_input">
+                <div class="form-group" style="width: 50vw;display: inline-block;">
+                    <label class="control-label">
+                        <h3>Choose first file : Invigilators </h3>
                     </label> <input id="file-preferences" type="file"></div>
             </div>
-            <div class="col">
-                <div class="form-group"><label class="control-label">
-                        <h3>Groups </h3>
-                    </label><input id="file-slots" type="file" style="display: none"></div>
+            <div class="col" id="groups_file_input" style="display: none">
+                <div class="col">
+                    <div class="form-group" style="width: 50vw;display: inline-block;">
+                        <label class="control-label">
+                            <h3>Choose second file : exam slots </h3>
+                        </label><input id="file-slots" type="file"></div>
+                </div>
             </div>
         </div>
-        <div class="row" style="margin-top: 15 px;">
-            <div class="col-md-6">
-                <div id="jsgrid-preference" style="background-color: #ffffff;"></div>
+        <div class="row">
+            <div class="col-md-2 count_stats" style="margin-top:25px;display:none">
+                <table class="table table-bordered bg-white">
+                    <tbody>
+                        <tr>
+                            <td>Individuals with full allotment</td>
+                            <td id="ind_cnt_eq"></td>
+                        </tr>
+                        <tr>
+                            <td>Individuals with less allotment</td>
+                            <td id="ind_cnt_less"></td>
+                        </tr>
+                        <tr>
+                            <td>Individuals with more allotment</td>
+                            <td id="ind_cnt_exceed"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <div id="jsgrid-preference" style="background-color: #ffffff;max-height:65vh;"></div>
                 <!-- Preference Dialog box -->
-                <div id="detailsDialogPref">
-                    <form id="detailsFormPref">
-                        <div class="form-group">
-                            <label for="name">Name:</label>
-                            <p id="namePref"></p>
-                        </div>
-                        <!-- <div class="form-group">
-                            <label for="preference">Preferences</label>
-                            <select id="preference" name="preference">
-                                <option value="">(Select)</option>
-                            </select>
-                        </div> -->
-                        <div id="preference">
-                            <p><strong>Preferences :</strong></p>
-                            <div class="form-group">
-                                <label for="choice1" value="choice1"></label>
-                                <input id="choice1" name="choice1" type="checkbox" />
+                <div id="detailsDialogPref" class="modal" role="dialog">
+                    <div class="modal-dialog"
+                        style="overflow-y: scroll; max-height:85%;  margin-top: 50px; margin-bottom:50px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Edit preferences</h3>
+                                <button class="close" data-dismiss="modal" aria-label="Close"><span
+                                        aria-hidden="true">&times;</span></button>
                             </div>
+                            <form id="detailsFormPref" class="form">
+                                <div class="modal-body">
+                                    <div class="form-group row">
+                                        <label for="name">Name : </label>
+                                        <p id="namePref"></p>
+                                    </div>
+                                    <div id="preference">
+                                        <p><strong>Preferences :</strong></p>
+                                        <div class="form-group">
+                                            <label for="choice1" value="choice1"></label>
+                                            <input id="choice1" name="choice1" type="checkbox" />
+                                        </div>
+                                    </div>
+                                    <div id="custom_pref_ind">
+                                        <p><strong>Enter custom input :</strong></p>
+                                        <div class="form-group">
+                                            <input id="custom_input_pref" name="custom_input_pref" type="text" />
+                                            <input id="custom_check_pref" name="custom_check_pref" type="checkbox" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <div class="form-group">
+                                        <button class="btn btn-outline-secondary" type="submit" id="save">Save</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        <div class="form-group">
-                            <button class="ui-button ui-widget ui-corner-all ui-button-text-only" type="submit" id="save">Save</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
-
-            <div class="col">
-                <div id="jsgrid-slots" style="background-color: #ffffff;"></div>
+            <div class="col-md-4">
+                <div id="jsgrid-slots" style="background-color: #ffffff;max-height:65vh;"></div>
                 <!-- Slots Dialog box -->
-                <div id="detailsDialogSlot">
-                    <form id="detailsFormSlot">
-                        <div class="form-group">
-                            <label for="name">Name:</label>
-                            <p id="nameSlot"></p>
-                        </div>
-                        <div id="slot">
-                            <p><strong>Individuals who preferred this :</strong></p>
-                            <div class="form-group">
+                <div id="detailsDialogSlot" class="modal" role="dialog">
+                    <div class="modal-dialog"
+                        style="overflow-y: scroll; max-height:85%;  margin-top: 50px; margin-bottom:50px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Edit slots</h3>
+                                <button class="close" data-dismiss="modal" aria-label="Close"><span
+                                        aria-hidden="true">&times;</span></button>
                             </div>
+                            <form id="detailsFormSlot" class="form">
+                                <div class="modal-body">
+                                    <div class="form-group row">
+                                        <label for="name">Name : </label>
+                                        <p id="nameSlot"></p>
+                                    </div>
+                                    <div id="slot" class="form-group">
+                                        <p><strong>Individuals who preferred this :</strong></p>
+                                        <div class="form-group">
+                                        </div>
+                                    </div>
+                                    <div id="custom_pref_slot">
+                                        <p><strong>Enter custom input :</strong></p>
+                                        <div class="form-group">
+                                            <input id="custom_input_slot" name="custom_input_slot" type="text" />
+                                            <input id="custom_check_slot" name="custom_check_slot" type="checkbox" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <div class="form-group">
+                                        <button class="btn btn-outline-secondary" type="submit" id="save">Save</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        <div class="form-group">
-                            <button class="ui-button ui-widget" type="submit" id="save">Save</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
+            </div>
+            <div class="col-md-2 count_stats" style="margin-top:25px;display:none">
+                <table class="table table-bordered bg-white">
+                    <tbody>
+                        <tr>
+                            <td>Groups with full allotment</td>
+                            <td id="grp_cnt_eq"></td>
+                        </tr>
+                        <tr>
+                            <td>Groups with less allotment</td>
+                            <td id="grp_cnt_less"></td>
+                        </tr>
+                        <tr>
+                            <td>Groups with more allotment</td>
+                            <td id="grp_cnt_exceed"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="row" style="margin-top: 15 px;">
-            <div class="col" style="margin-top:25px">
+        <div class="row" style="margin-top: 15px;">
+            <div class="col" style="margin-top:2.8vh;display:none;" id="save_files">
                 <div class="form-group" style="text-align: center;"><label class="control-label">
                         <h3>Save files</h3>
-                    </label> <button id="saveFiles" class="ui-button ui-widget">Save</button></div>
+                    </label> <button id="saveFiles" class="btn btn-outline-secondary">Save</button></div>
             </div>
         </div>
+        <!-- <div class="row" style="margin-top: 15px;">
+            <div class="col" style="margin-top:5px">
+                Format of input CSV file : SrNum, Full-Name, Unique-id, capacity, allocated, choices
+            </div>
+        </div> -->
     </div>
+    <div class="row page-footer bg-white">
+        <div class="col text-center py-3"> Designed by PC LAB, Department of Electrical Engineering, IIT Bombay,
+            December 2019
+        </div>
     </div>
     <!-- <script src="assets/js/jquery.min.js"></script> -->
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
 </body>
-
 </html>
