@@ -357,6 +357,14 @@ $(function() {
             formHandlerSlot();
         }
     });
+
+    $("#detailsDialogPref").on('hide.bs.modal', function() {
+        lastItemPref = null;
+    });
+    $("#detailsDialogSlot").on('hide.bs.modal', function() {
+        lastItemSlot = null;
+    });
+
     $("#saveFiles").click(function() {
         if (!uploaded_individuals || !uploaded_groups) alert("Load both files first !");
         else {
