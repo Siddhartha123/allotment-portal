@@ -10,6 +10,7 @@ $(function() {
     var t = true,
         f = false;
     var first_target_name, second_target_name;
+    var disable_submit_pref = f;
 
     function findIndex(data, where, what) {
         result = -1;
@@ -118,12 +119,16 @@ $(function() {
                     }
                     formHandlerPref = function() {
                         allocated = [];
+                        disable_submit_pref = f;
                         $("#preference input").each(function(index, value) {
                             if (value.checked) {
                                 allocated.push(value.id);
                                 group = d_grps.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
-                                if (group == undefined) alert(value.id + "not found");
-                                else {
+                                if (group == undefined) {
+                                    alert(value.id + "not found. You can't choose this option. Kindly save your work and add this item in the other file.");
+                                    // also stop here
+                                    disable_submit_pref = t;
+                                } else {
                                     y = group.allocated == null ? [] : group.allocated.split(";");
                                     if ($.inArray(client["Unique-id"], y) == -1)
                                         y.push(client["Unique-id"]);
@@ -134,7 +139,8 @@ $(function() {
                             } else {
                                 group = d_grps.find(obj => { return value.id.indexOf(obj["Unique-id"]) != -1 });
                                 //check if group found or not
-                                if (group == undefined) alert(value.id + "not found");
+                                disable_submit_pref = disable_submit_pref || f;
+                                if (group == undefined) console.log(value.id + " not found.");
                                 else {
                                     y = group.allocated == null ? [] : group.allocated.split(";");
                                     index = y.indexOf(client["Unique-id"]);
@@ -147,17 +153,19 @@ $(function() {
                                 }
                             }
                         });
-                        client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
-                        var idx = findIndex(d_indvs, "Unique-id", client["Unique-id"]);
-                        d_indvs[idx] = client;
+                        if (!disable_submit_pref) {
+                            client["allocated"] = allocated.length > 0 ? allocated.join(";") : null;
+                            var idx = findIndex(d_indvs, "Unique-id", client["Unique-id"]);
+                            d_indvs[idx] = client;
                         $("#jsgrid-preference").jsGrid("refresh");
                         //check if other dialog was open or not
                         if (lastItemSlot != null)
                             $("#jsgrid-slots").jsGrid("rowClick", lastItemSlot);
                         $("#jsgrid-slots").jsGrid("refresh");
-                        lastItemPref = null;
-                        $("#detailsDialogPref").modal("hide");
-                        update_count_display();
+                            lastItemPref = null;
+                            $("#detailsDialogPref").modal("hide");
+                            update_count_display();
+                        }
                     };
                     $("#detailsDialogPref").modal({
                         backdrop: f,
