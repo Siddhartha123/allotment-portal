@@ -93,8 +93,10 @@ $(function() {
                     loadData: function(filter) {
                         return $.grep(d_indvs, function(individual) {
                             var allocated = individual["allocated"] == null ? 0 : individual["allocated"].split(";").length;
-                            return (!filter["Full-Name"] || individual["Full-Name"].indexOf(filter["Full-Name"]) > -1) &&
-                                (!("" + filter["Unique-id"]) || ("" + individual["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1) && ((filter["allocated"] == null) || allocated == filter["allocated"]);
+                            if (individual["Full-Name"] == null)
+                                return f;
+                            return (individual["Full-Name"] != null && !filter["Full-Name"] || individual["Full-Name"].toUpperCase().indexOf(filter["Full-Name"].toUpperCase()) > -1) &&
+                                (!("" + filter["Unique-id"]) || ("" + individual["Unique-id"]).toUpperCase().indexOf("" + filter["Unique-id"].toUpperCase()) > -1) && ((filter["allocated"] == null) || allocated == filter["allocated"]);
                         });
                     }
                 },
@@ -232,7 +234,9 @@ $(function() {
                     loadData: function(filter) {
                         return $.grep(d_grps, function(group) {
                             var allocated = group["allocated"] == null ? 0 : group["allocated"].split(";").length;
-                            return (!filter["Full-Name"] || group["Full-Name"].indexOf(filter["Full-Name"]) > -1) &&
+                            if (group["Full-Name"] == null)
+                                return false;
+                            return (!filter["Full-Name"] || group["Full-Name"].toUpperCase().indexOf(filter["Full-Name"].toUpperCase()) > -1) &&
                                 (!("" + filter["Unique-id"]) || ("" + group["Unique-id"]).indexOf("" + filter["Unique-id"]) > -1) && (filter["allocated"] == null || filter["allocated"] == allocated);
                         });
                     }
